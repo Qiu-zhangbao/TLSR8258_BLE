@@ -43,7 +43,7 @@ _attribute_my_ram_code_ void irq_handler(void)
 
 _attribute_ram_code_ int main (void)    //must run in ramcode
 {
-	blc_pm_select_external_32k_crystal();
+	blc_pm_select_internal_32k_crystal();
 
 	cpu_wakeup_init();
 

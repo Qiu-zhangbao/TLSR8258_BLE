@@ -26,7 +26,7 @@
 uart_data_t rec_buff = {0,  {0, } };
 uart_data_t trans_buff = {0, {0,} };
 _attribute_data_retention_  char at_print_buf[256] = { 0 };
-
+const unsigned char hextab[16] = { '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
 void app_uart_init(void)
 {
@@ -67,7 +67,7 @@ void at_print(char * str)
 		{
 			uart_dma_send((unsigned char*)&trans_buff);
 			trans_buff.dma_len = 0;
-			WaitMs(2);
+			WaitMs(20);
 		}
 	}
 
@@ -75,10 +75,19 @@ void at_print(char * str)
 	{
 		uart_dma_send((unsigned char*)&trans_buff);
 		trans_buff.dma_len = 0;
-		WaitMs(2);
+		WaitMs(20);
 	}
 }
-
+void at_print_array(char * data, u32 len)
+{
+	unsigned char buf[128] = { 0 };
+	for(int i =0; i < len; i ++)
+	{
+		buf[i*2] = hextab[(data[i] >> 4)];
+		buf[i*2 +1] = hextab[(data[i]&0xf)];
+	}
+	at_print((char*)buf);
+}
 void at_send(char * data, u32 len)
 {
 	while(len > UART_DATA_LEN)

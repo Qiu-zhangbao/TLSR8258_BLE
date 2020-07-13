@@ -18,7 +18,7 @@ void app_uart_init(void);
 void at_print(char * str);
 void at_send(char * data, u32 len);
 void app_uart_irq_proc(void);
-
+void at_print_array(char * data, u32 len);
 
 
 #endif
