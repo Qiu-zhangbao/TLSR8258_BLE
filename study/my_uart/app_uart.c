@@ -67,7 +67,7 @@ void at_print(char * str)
 		{
 			uart_dma_send((unsigned char*)&trans_buff);
 			trans_buff.dma_len = 0;
-			WaitMs(20);
+			WaitMs(2);
 		}
 	}
 
@@ -75,7 +75,7 @@ void at_print(char * str)
 	{
 		uart_dma_send((unsigned char*)&trans_buff);
 		trans_buff.dma_len = 0;
-		WaitMs(20);
+		WaitMs(2);
 	}
 }
 void at_print_array(char * data, u32 len)

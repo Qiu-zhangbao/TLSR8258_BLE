@@ -9,7 +9,7 @@
 
 typedef struct{
 	unsigned int dma_len;        // dma len must be 4 byte
-	unsigned char data[UART_DATA_LEN];
+	char data[UART_DATA_LEN];
 }uart_data_t;
 
 

@@ -42,102 +42,6 @@ void Write_IIC_Data(unsigned char IIC_Data)
 	i2c_write_byte(0x40,1,IIC_Data);
 }
 
-// void IIC_Start()
-// {
-
-// 	OLED_SCLK_Set();
-// 	OLED_SDIN_Set();
-	
-// 	OLED_SDIN_Clr();
-// 	OLED_SCLK_Clr();
-// }
-
-// /**********************************************
-// //IIC Stop
-// **********************************************/
-// void IIC_Stop()
-// {
-// 	OLED_SCLK_Set();
-// 	OLED_SDIN_Clr();
-	
-// 	OLED_SDIN_Set();
-// }
-
-// void IIC_Wait_Ack()
-// {
-
-// 	//GPIOB->CRH &= 0XFFF0FFFF;	//����PB12Ϊ��������ģʽ
-// 	//GPIOB->CRH |= 0x00080000;
-// 	//	OLED_SDA = 1;
-// 	//	delay_us(1);
-// 	//OLED_SCL = 1;
-// 	//delay_us(50000);
-// 	/*	while(1)
-// 	{
-// 		if(!OLED_SDA)				//�ж��Ƿ���յ�OLED Ӧ���ź�
-// 		{
-// 			//GPIOB->CRH &= 0XFFF0FFFF;	//����PB12Ϊͨ���������ģʽ
-// 			//GPIOB->CRH |= 0x00030000;
-// 			return;
-// 		}
-// 	}
-// */
-// 	OLED_SCLK_Set();
-// 	OLED_SCLK_Clr();
-// }
-// /**********************************************
-// // IIC Write byte
-// **********************************************/
-
-// void Write_IIC_Byte(unsigned char IIC_Byte)
-// {
-// 	unsigned char i;
-// 	unsigned char m, da;
-// 	da = IIC_Byte;
-// 	OLED_SCLK_Clr();
-// 	for (i = 0; i < 8; i++)
-// 	{
-// 		m = da;
-// 		m = m & 0x80;
-// 		if (m == 0x80)
-// 		{
-// 			OLED_SDIN_Set();
-// 		}
-// 		else
-// 			OLED_SDIN_Clr();
-// 		da = da << 1;
-// 		OLED_SCLK_Set();
-// 		OLED_SCLK_Clr();
-// 	}
-// }
-// /**********************************************
-// // IIC Write Command
-// **********************************************/
-// void Write_IIC_Command(unsigned char IIC_Command)
-// {
-// 	IIC_Start();
-// 	Write_IIC_Byte(0x78); //Slave address,SA0=0
-// 	IIC_Wait_Ack();
-// 	Write_IIC_Byte(0x00); //write command
-// 	IIC_Wait_Ack();
-// 	Write_IIC_Byte(IIC_Command);
-// 	IIC_Wait_Ack();
-// 	IIC_Stop();
-// }
-// /**********************************************
-// // IIC Write Data
-// **********************************************/
-// void Write_IIC_Data(unsigned char IIC_Data)
-// {
-// 	IIC_Start();
-// 	Write_IIC_Byte(0x78); //D/C#=0; R/W#=0
-// 	IIC_Wait_Ack();
-// 	Write_IIC_Byte(0x40); //write data
-// 	IIC_Wait_Ack();
-// 	Write_IIC_Byte(IIC_Data);
-// 	IIC_Wait_Ack();
-// 	IIC_Stop();
-// }
 void OLED_WR_Byte(unsigned dat, unsigned cmd)
 {
 	if (cmd)
@@ -256,12 +160,6 @@ void OLED_ShowChar(u8 x, u8 y, u8 chr, u8 Char_Size)
 		OLED_Set_Pos(x, y + 1);
 		for (i = 0; i < 8; i++)
 			OLED_WR_Byte(F8X16[c * 16 + i + 8], OLED_DATA);
-	}
-	else
-	{
-		OLED_Set_Pos(x, y);
-		for (i = 0; i < 6; i++)
-			OLED_WR_Byte(F6x8[c][i], OLED_DATA);
 	}
 }
 //m^n????
