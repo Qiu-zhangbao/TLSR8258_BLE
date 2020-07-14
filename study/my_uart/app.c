@@ -24,10 +24,12 @@
 #include "drivers.h"
 #include "app_config.h"
 #include "vendor/common/blt_led.h"
-// #include "vendor/common/blt_soft_timer.h"
+#include "vendor/common/blt_soft_timer.h"
 #include "vendor/common/blt_common.h"
-#include "oled.h"
+#include "hdl_oled.h"
+#include "hdl_key.h"
 #include "app_uart.h"
+#include "global_event_queue.h"
 
 #define	MY_RF_POWER_INDEX	RF_POWER_P3p01dBm
 
@@ -38,19 +40,17 @@
 	enum{
 		LED_ON = 0,
 		LED_OFF,
-		LED_AUDIO_OFF,
-		LED_SHINE_SLOW,
-		LED_SHINE_FAST,
-		LED_SHINE_OTA,
+		LED_BOUND,
+		LED_UNBOUND,
+		LED_CONTROL,
 	};
 
 	const led_cfg_t led_cfg[] = {
 			{100,     0,      0xff,   0x00,	 },
-			{100,	  0 ,	  0xff,	  0x02,  },
-			{0,	      100 ,   0xff,	  0x02,  },
-			{500,	  500 ,   2,	  0x04,	 },
-			{250,	  250 ,   4,	  0x04,  },
-			{500,	  500 ,   200,	  0x08,  },
+			{0,	  	 100 ,	  0xff,	  0x02,  },
+			{100,	  100 ,   3,	  0x02,  },
+			{1000,	  1000 ,  3,	  0x04,	 },
+			{50,	  0 ,   1,	  0x04,  },
 	};
 
 #endif
@@ -214,6 +214,13 @@ void adv_scan(void)
 
 	blc_ll_addScanningInAdvState();
 }
+u32 t=0;
+int led(void)
+{
+	device_led_setup(led_cfg[LED_BOUND]);
+	t++;
+	return 0;
+}
 
 void user_init_normal(void)
 {
@@ -231,9 +238,12 @@ void user_init_normal(void)
 
 	#if (BLT_APP_LED_ENABLE)
 	device_led_init(GPIO_LED, LED_ON_LEVAL);  //LED initialization
-	device_led_setup(led_cfg[LED_SHINE_OTA]);
 	#endif
-	// blt_soft_timer_init();
+	blt_soft_timer_init();
+	key_init();
+
+	blt_soft_timer_add(led,1000*1000);
+	Init_event_queue();//事件队列
 }
 u32 time_starts=0;
 
@@ -245,17 +255,18 @@ void exange(void)
 	flag=1;
 }
 
-u32 t=0;
+
+
 _attribute_ram_code_ void main_loop (void)
 {
 	blt_sdk_main_loop();
 	OLED_ShowNum(0,0,t,8,16);
 	//change();
 	static u32 button_detect_tick = 0;
-	t++;
+	
 	if(clock_time_exceed(button_detect_tick, 1000*1000))
 	{
-		
+		// t++;
 		button_detect_tick = clock_time();
 		// u_sprintf((char*)at_print_buf, "num:%d", t);
 		// at_print(at_print_buf);
@@ -265,5 +276,33 @@ _attribute_ram_code_ void main_loop (void)
 #if (BLT_APP_LED_ENABLE)
 	device_led_process();
 #endif
+	blt_soft_timer_process(MAINLOOP_ENTRY);
+
+	// if(key_scan() == KEY1_SHORT_PRESS)
+	// {
+	// 	device_led_setup(led_cfg[LED_BOUND]);
+	// 	t=1;
+	// }
+	// else if(key_scan() == KEY2_SHORT_PRESS)
+	// {
+	// 	device_led_setup(led_cfg[LED_UNBOUND]);
+	// 	t=2;
+	// }
+	// else if(key_scan() == KEY1_LONG_PRESS)
+	// {
+	// 	device_led_setup(led_cfg[LED_UNBOUND]);
+	// 	t=3;
+	// }
+	// else if(key_scan() == KEY2_LONG_PRESS)
+	// {
+	// 	device_led_setup(led_cfg[LED_UNBOUND]);
+	// 	t=4;
+	// }
+	// else if(key_scan() == KEY_RELASE)
+	// {
+	// 	t=0;
+	// }
+	
+	
 
 }

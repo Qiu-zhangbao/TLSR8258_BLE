@@ -22,44 +22,38 @@
 
 #include "tl_common.h"
 #include "drivers.h"
+#include "hdl_key.h"
 
-#include "tl_common.h"
-#include "drivers.h"
-#include "stack/ble/ble.h"
-
-#include "blm_att.h"
-#include "blm_pair.h"
-#include "blm_host.h"
-#include "blm_ota.h"
-
+#define UI_BUTTON_ENABLE   1
 #if (UI_BUTTON_ENABLE)
 
 /////////////////////////////////////////////////////////////////////
-#define MAX_BTN_SIZE 2
+
 #define BTN_VALID_LEVEL 0
+
 #define BTN_PAIR 0x01
 #define BTN_UNPAIR 0x02
 
-u32 ctrl_btn[] = {SW1_GPIO, SW2_GPIO};
+u32 ctrl_btn[] = {KEY1_PIN, KEY2_PIN};
 u8 btn_map[MAX_BTN_SIZE] = {BTN_PAIR, BTN_UNPAIR};
 
-typedef struct
-{
-	u8 cnt; //count button num
-	u8 btn_press;
-	u8 keycode[MAX_BTN_SIZE]; //6 btn
-} vc_data_t;
+
 vc_data_t vc_event;
+btn_status_t btn_status;
+key_state_t key_state=KEY_RELASE;
 
-typedef struct
+void key_init(void)
 {
-	u8 btn_history[4]; //vc history btn save
-	u8 btn_filter_last;
-	u8 btn_not_release;
-	u8 btn_new; //new btn  flag
-} btn_status_t;
+    gpio_set_func(GPIO_PD2, AS_GPIO);
+	gpio_setup_up_down_resistor(GPIO_PD2, PM_PIN_PULLUP_10K);
+	gpio_set_output_en(GPIO_PD2, 0);
+	gpio_set_input_en(GPIO_PD2, 1); 	
 
-btn_status_t btn_status=;
+	gpio_set_func(GPIO_PB5, AS_GPIO);
+	gpio_setup_up_down_resistor(GPIO_PB5, PM_PIN_PULLUP_10K);
+	gpio_set_output_en(GPIO_PB5, 0);
+	gpio_set_input_en(GPIO_PB5, 1); 
+}
 
 u8 btn_debounce_filter(u8 *btn_v)
 {
@@ -116,97 +110,107 @@ u8 vc_detect_button(int read_key)
 
 void proc_button(void)
 {
-	//		static u32 button_det_tick;
-	//		if(clock_time_exceed(button_det_tick, 5000))
-	//		{
-	//			button_det_tick = clock_time();
-	//		}
-	//		else{
-	//			return;
-	//		}
-
-	static u32 button_history = 0;
-	static u32 last_singleKey_press_tick;
-
-	static int button0_press_flag;
-	static u32 button0_press_tick;
-	static int button1_press_flag;
-	static u32 button1_press_tick;
+    static u32 button_det_tick;
+    if(clock_time_exceed(button_det_tick, 5000))
+    {
+        button_det_tick = clock_time();
+    }
+    else{
+        return;
+    }
 
 	int det_key = vc_detect_button(1);
 
 	if (det_key) //key change: press or release
 	{
-
 		u8 key0 = vc_event.keycode[0];
 		//			u8 key1 = vc_event.keycode[1];
 
 		if (vc_event.cnt == 2) //two key press
 		{
+            key_state=KEY1_KEY2_PRESS;
 		}
 		else if (vc_event.cnt == 1) //one key press
 		{
-#if (BLE_MASTER_OTA_ENABLE)
-			if (!master_ota_test_mode && !clock_time_exceed(last_singleKey_press_tick, 2000000))
-			{
-				button_history = button_history << 1 | (key0 == BTN_PAIR);
-				if ((button_history & 0x0f) == 0x0f)
-				{
-					master_ota_test_mode = 1;
-					extern u32 ota_mode_begin_tick;
-					ota_mode_begin_tick = clock_time();
-				}
-			}
-			else
-			{
-				button_history = 0;
-			}
-
-			last_singleKey_press_tick = clock_time();
-#endif
-
 			if (key0 == BTN_PAIR)
 			{
-				if (!master_ota_test_mode)
-				{
-					dongle_pairing_enable = 1;
-				}
-				button0_press_flag = 1;
-				button0_press_tick = clock_time();
+				 key_state=KEY1_SHORT_PRESS;
 			}
 			else if (key0 == BTN_UNPAIR)
 			{
-				if (!master_ota_test_mode)
-				{
-					dongle_unpair_enable = 1;
-				}
-				button1_press_flag = 1;
-				button1_press_tick = clock_time();
+				 key_state=KEY2_SHORT_PRESS;
 			}
 		}
 		else
-		{ //release
-			if (dongle_pairing_enable)
-			{
-				dongle_pairing_enable = 0;
-			}
-
-			if (dongle_unpair_enable)
-			{
-				dongle_unpair_enable = 0;
-			}
-
-#if (BLE_MASTER_OTA_ENABLE) //ota cmd trigger
-			extern void host_button_trigger_ota_start(int, int);
-			if (master_ota_test_mode == 2)
-			{
-				host_button_trigger_ota_start(button0_press_flag, button1_press_flag);
-			}
-#endif
-
-			button0_press_flag = 0;
-			button1_press_flag = 0;
+		{ 
+            key_state=KEY_RELASE;
 		}
 	}
 }
+
+key_state_t btn_status_last=KEY_RELASE;
+
+// key_state_t key_scan(void)
+// {
+//     proc_button();
+
+//     static u32 press_time=0;
+    
+//     if(key_state == KEY1_SHORT_PRESS)
+//     {
+//         press_time++;
+//         if(press_time>200)
+//         {
+//             press_time=0;
+//             key_state = KEY1_LONG_PRESS;
+//         }
+//     }
+//     else if(key_state == KEY2_SHORT_PRESS)
+//     {
+//         press_time++;
+//         if(press_time>200)
+//         {
+//             press_time=0;
+//             key_state = KEY2_LONG_PRESS;
+//         }
+//     }
+//     else  if(key_state == KEY_RELASE)
+//     {
+//         if(btn_status_last!=key_state)
+//         {
+//             return btn_status_last;
+//         }
+       
+//     }
+    
+//     btn_status_last=key_state;
+
+// }
+
+// key_state_t key_scan(void)
+// {
+//     if(KEY1 == 0)
+//     {
+
+//     }
+//     else if 
+//     {
+//         /* code */
+//     }
+    
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #endif //end of UI_BUTTON_ENABLE
