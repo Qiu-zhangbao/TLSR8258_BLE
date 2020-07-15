@@ -30,28 +30,34 @@
 #include "hdl_key.h"
 #include "app_uart.h"
 #include "global_event_queue.h"
-
+#include "fun_control.h"
 #define	MY_RF_POWER_INDEX	RF_POWER_P3p01dBm
 
 
 /////////////////////////// led management /////////////////////
 #if (BLT_APP_LED_ENABLE)
 
-	enum{
-		LED_ON = 0,
-		LED_OFF,
-		LED_BOUND,
-		LED_UNBOUND,
-		LED_CONTROL,
-	};
+#if (DEVICE_TYPE == REMOTE)
+	
+led_cfg_t led_cfg[] = {
+		{10,     10,      1,   	  7,  	},// REMOTE_LED_KEY_PRESS,
+		{500,	  500 ,	  2,	  6,    },// REMOTE_LED_BOUND_SUCCESS,
+		{100,	  100 ,   2,	  5,    },// REMOTE_LED_BOUND_FAIL,
+		{500,	  500 ,   2,	  4,	 },// REMOTE_LED_UNBOUND_SUCCESS,
+		{100,	  100 ,   2,	  3, 	 },// REMOTE_LED_UNBOUND_FAIL,
+		{1000,	  1000 ,  100,	  2, 	 },// REMOTE_LED_BOUND_MODE,
+		{100,	  1000 ,  100,	  1, 	 },// REMOTE_LED_UNBOUND_MODE,
+};
+#elif(DEVICE_TYPE == LIGHT)
+led_cfg_t led_cfg[] = {
+		{100,     0,      0xff,      0,	},// LIGHT_LED_ON = 0,
+		{0,	  	100 ,	  1,	  1,    },// LIGHT_LED_OFF,
+		{500,	  500 ,   1,	  2,    },// LIGHT_LED_SELECT,
+		{1000,	  1000 ,  3,	  3,	 },// LIGHT_LED_RECOVER,		
+};
 
-	const led_cfg_t led_cfg[] = {
-			{100,     0,      0xff,   0x00,	 },
-			{0,	  	 100 ,	  0xff,	  0x02,  },
-			{100,	  100 ,   3,	  0x02,  },
-			{1000,	  1000 ,  3,	  0x04,	 },
-			{50,	  0 ,   1,	  0x04,  },
-	};
+#endif
+
 
 #endif
 
@@ -75,6 +81,9 @@ MYFIFO_INIT(blt_rxfifo, RX_FIFO_SIZE, RX_FIFO_NUM);
 MYFIFO_INIT(blt_txfifo, TX_FIFO_SIZE, TX_FIFO_NUM);
 
 #define MTU_SIZE_SETTING   			 		247
+
+
+int ui_process(void);
 
 //////////////////////////////////////////////////////////
 // event call back
@@ -142,16 +151,46 @@ int controller_event_callback (u32 h, u8 *p, int n)
 				//after controller is set to scan state, it will report all the adv packet it received by this event
 				event_adv_report_t *pa = (event_adv_report_t *)p;
 				s8 rssi = pa->data[pa->len];
+				
+				
 
 				if(rssi!=0)
 				{
-				u_sprintf((char*)at_print_buf, "%d,%02X", rssi,pa->mac[5]);
-				//u_sprintf((char*)at_print_buf, "+ADV:%d,%02X%02X%02X%02X%02X%02X,", rssi,pa->mac[5],pa->mac[4],pa->mac[3],pa->mac[2],pa->mac[1],pa->mac[0]);
-				at_print(at_print_buf);
+				// u_sprintf((char*)at_print_buf, "%d,%02X", rssi,pa->mac[5]);
+				// //u_sprintf((char*)at_print_buf, "+ADV:%d,%02X%02X%02X%02X%02X%02X,", rssi,pa->mac[5],pa->mac[4],pa->mac[3],pa->mac[2],pa->mac[1],pa->mac[0]);
+				// at_print(at_print_buf);
 
-				//at_print_array(pa->data, pa->len);
+				//if(pa->mac[5]==0x30&&pa->mac[4]==0x1B&&pa->mac[3]==0x97&&pa->mac[2]==0x0F&&pa->mac[1]==0x37&&pa->mac[0]==0x05)
+				//遥控器在下面
+				// if(pa->mac[5]==0x30&&pa->mac[4]==0x1B&&pa->mac[3]==0x97&&pa->mac[2]==0x0F&&pa->mac[1]==0x26&&pa->mac[0]==0xE0)
 				
-				at_print("\r\n");
+				// {
+				// 	char * data=pa->data;
+				// 	unsigned char buf[128] = { 0 };
+				// 	const unsigned char hextab[16] = { '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+				// 	for(int i =0; i < pa->len; i ++)
+				// 	{
+				// 	buf[i*2] = hextab[(data[i] >> 4)];
+				// 	buf[i*2 +1] = hextab[(data[i]&0xf)];
+				// 	}
+				// 	//at_print(&buf[11]);
+				// 	// at_print("\r\n");
+				// 	if(buf[11]=='3')
+				// 	{
+				// 		device_led_setup(led_cfg[LED_ON]);
+				// 		//at_print("on\r\n");
+				// 	}
+				// 	else if(buf[11]=='4')
+				// 	{
+				// 		device_led_setup(led_cfg[LED_OFF]);
+				// 		//at_print("off\r\n");
+				// 	}
+
+				// }
+
+				// at_print_array(pa->data, pa->len);
+				
+				// at_print("\r\n");
 				
 				}
 			}
@@ -215,94 +254,42 @@ void adv_scan(void)
 	blc_ll_addScanningInAdvState();
 }
 u32 t=0;
-int led(void)
-{
-	device_led_setup(led_cfg[LED_BOUND]);
-	t++;
-	return 0;
-}
+
 
 void user_init_normal(void)
 {
 	random_generator_init();  //初始化随机数生成器
-
 	adv_scan();
-
 	rf_set_power_level_index (MY_RF_POWER_INDEX); //设置发射功率
-
 	app_uart_init(); //初始化串口，用于调试打印输出
-
 	irq_enable();
 	OLED_Init();
 	OLED_Clear();
-
 	#if (BLT_APP_LED_ENABLE)
 	device_led_init(GPIO_LED, LED_ON_LEVAL);  //LED initialization
 	#endif
 	blt_soft_timer_init();
 	key_init();
-
-	blt_soft_timer_add(led,1000*1000);
+	blt_soft_timer_add(ui_process,10*1000);//100ms
 	Init_event_queue();//事件队列
+	fun_control_init();
 }
-u32 time_starts=0;
 
-u8 flag=0;
-void exange(void)
+int ui_process(void)
 {
-	blc_ll_setScanEnable (BLC_SCAN_DISABLE, DUP_FILTER_DISABLE);
-	bls_ll_setAdvEnable(1); 
-	flag=1;
+	#if (DEVICE_TYPE == REMOTE)
+	key_scan();
+	#endif
+
+	#if (BLT_APP_LED_ENABLE)
+	device_led_process();
+	#endif
+
+	return 0;
 }
-
-
 
 _attribute_ram_code_ void main_loop (void)
 {
 	blt_sdk_main_loop();
-	OLED_ShowNum(0,0,t,8,16);
-	//change();
-	static u32 button_detect_tick = 0;
-	
-	if(clock_time_exceed(button_detect_tick, 1000*1000))
-	{
-		// t++;
-		button_detect_tick = clock_time();
-		// u_sprintf((char*)at_print_buf, "num:%d", t);
-		// at_print(at_print_buf);
-		// at_print("\r\n");
-		//exange();
-	}
-#if (BLT_APP_LED_ENABLE)
-	device_led_process();
-#endif
 	blt_soft_timer_process(MAINLOOP_ENTRY);
-
-	// if(key_scan() == KEY1_SHORT_PRESS)
-	// {
-	// 	device_led_setup(led_cfg[LED_BOUND]);
-	// 	t=1;
-	// }
-	// else if(key_scan() == KEY2_SHORT_PRESS)
-	// {
-	// 	device_led_setup(led_cfg[LED_UNBOUND]);
-	// 	t=2;
-	// }
-	// else if(key_scan() == KEY1_LONG_PRESS)
-	// {
-	// 	device_led_setup(led_cfg[LED_UNBOUND]);
-	// 	t=3;
-	// }
-	// else if(key_scan() == KEY2_LONG_PRESS)
-	// {
-	// 	device_led_setup(led_cfg[LED_UNBOUND]);
-	// 	t=4;
-	// }
-	// else if(key_scan() == KEY_RELASE)
-	// {
-	// 	t=0;
-	// }
-	
-	
-
 }

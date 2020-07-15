@@ -1,5 +1,4 @@
 #include "global_event_queue.h"
-#include "string.h"
 #include "tl_common.h"
 #include "drivers.h"
 

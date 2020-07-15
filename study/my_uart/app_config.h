@@ -21,10 +21,28 @@
  *******************************************************************************************************/
 #pragma once
 
+#include "vendor/common/blt_led.h"
+
 /* Enable C linkage for C++ Compilers: */
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+/////////////////// Device  /////////////////////////////////
+
+#define REMOTE  	1
+
+#define LIGHT 	 	2
+
+#define DEVICE_TYPE  	REMOTE
+
+#define KIT  		1
+
+#define DONG 	 	2
+
+#define DEVICE_BOARD  	KIT
+
+
 
 /////////////////// Clock  /////////////////////////////////
 #define CLOCK_SYS_CLOCK_HZ  	16000000
@@ -37,21 +55,44 @@ enum{
 #define BLT_APP_LED_ENABLE					1
 
 //////////////////// LED CONFIG (EVK board) ///////////////////////////
-// #if (BLT_APP_LED_ENABLE)
-	// #define LED_ON_LEVAL 					1 			//gpio output high voltage to turn on led
-	// #define	GPIO_LED						GPIO_PB4    //red
-	// #define PB4_FUNC						AS_GPIO
-// #endif
 
+#if (DEVICE_BOARD == KIT)
+#define	GPIO_LED						GPIO_PC3//123:B4 C4 C3:
+#elif(DEVICE_BOARD == DONG)
+#define	GPIO_LED						GPIO_PB0
+#endif
 
 #define LED_ON_LEVAL					1			//gpio output high voltage to turn on led
-#define	GPIO_LED						GPIO_PC4    //red
 
 
+#if (DEVICE_TYPE == REMOTE)
+enum{
+	REMOTE_LED_KEY_PRESS,
+	REMOTE_LED_BOUND_SUCCESS,
+	REMOTE_LED_BOUND_FAIL,
+	REMOTE_LED_UNBOUND_SUCCESS,
+	REMOTE_LED_UNBOUND_FAIL,
+	REMOTE_LED_BOUND_MODE,
+	REMOTE_LED_UNBOUND_MODE,
+};
+#elif(DEVICE_TYPE == LIGHT)
+enum{
+	LIGHT_LED_ON = 0,
+	LIGHT_LED_OFF,
+	LIGHT_LED_SELECT,
+	LIGHT_LED_RECOVER,
+};
+#endif
+
+
+
+//////////////////// DMA ///////////////////////////
 #define 	SLAVE_DMA_MODE_ADDR_WRITE		0x44a00  //i2c master write data to  0x4A000
 #define 	SLAVE_DMA_MODE_ADDR_READ		0x4A100  //i2c master read data from 0x4A100
 
 extern char at_print_buf[256];
+extern led_cfg_t led_cfg[];
+
 
 
 #include "vendor/common/default_config.h"

@@ -11,6 +11,7 @@ $(OUT_PATH)/app.o\
 $(OUT_PATH)/hdl_oled.o\
 $(OUT_PATH)/hdl_key.o\
 $(OUT_PATH)/global_event_queue.o\
+$(OUT_PATH)/fun_control.o\
 
 
 # Each subdirectory must supply rules for building sources it contributes

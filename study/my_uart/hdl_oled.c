@@ -176,7 +176,7 @@ void OLED_ShowNum(u8 x, u8 y, u32 num, u8 len, u8 size2)
 	}
 }
 //????????????
-void OLED_ShowString(u8 x, u8 y, u8 *chr, u8 Char_Size)
+void OLED_ShowString(u8 x, u8 y, char *chr, u8 Char_Size)
 {
 	unsigned char j = 0;
 	while (chr[j] != '\0')

@@ -1,5 +1,5 @@
 
-#include "fun_control.h"
+#include "fun_bound.h"
 #include "tl_common.h"
 #include "drivers.h"
 #include "global_event_queue.h"
@@ -8,33 +8,33 @@
 #include "hdl_oled.h"
 #include <stack/ble/ble.h>
 static event_type_t Fun_CtrlSMEventHandle(event_type_t event);
-int fun_control_process(void);
-fun_control_sm_t fun_control_sm = CONTROL;
-fun_control_sm_t fun_control_sm_last = UNBOUND;
+int fun_bound_process(void);
+fun_bound_sm_t fun_bound_sm = CONTROL;
+fun_bound_sm_t fun_bound_sm_last = UNBOUND;
 u8 key2_press_cnt=0;
 
-void fun_control_init(void)
+void fun_bound_init(void)
 {
     resgister_event_handle(Fun_CtrlSMEventHandle,   EVENT_KEY1_SHORT_PRESSED |  EVENT_KEY2_SHORT_PRESSED | \
     EVENT_KEY1_LONG_PRESSED	 |  EVENT_KEY2_LONG_PRESSED  |  EVENT_KEY1_AND_KEY2_PRESSED );
-    blt_soft_timer_add(fun_control_process,100*1000);//100ms
+    blt_soft_timer_add(fun_bound_process,100*1000);//100ms
 }
 
 
-int fun_control_process(void)
+int fun_bound_process(void)
 {
-    fun_control_sm_mgr(fun_control_sm);
+    fun_bound_sm_mgr(fun_bound_sm);
 	return 0;
 }
 
 
 
 
-void fun_control_sm_mgr(fun_control_sm_t sm_state)
+void fun_bound_sm_mgr(fun_bound_sm_t sm_state)
 {
-	if(sm_state == fun_control_sm_last)
+	if(sm_state == fun_bound_sm_last)
 		return;
-	switch(fun_control_sm_last) 
+	switch(fun_bound_sm_last) 
 	{
 		case CONTROL:	
         	OLED_Clear();
@@ -50,7 +50,7 @@ void fun_control_sm_mgr(fun_control_sm_t sm_state)
 	switch(sm_state)
 	{
 		case CONTROL:	
-            OLED_ShowString(30,0,"control",16);
+            OLED_ShowString(30,0,"bound",16);
             OLED_ShowString(30,4,"state:",16);
             OLED_ShowNum(80,4,0,1,16);
 			break;
@@ -63,7 +63,7 @@ void fun_control_sm_mgr(fun_control_sm_t sm_state)
 	
 	}
 	
-	fun_control_sm_last = sm_state;
+	fun_bound_sm_last = sm_state;
 }
 
 void bsl_led_onoff(u8 on)
@@ -85,7 +85,7 @@ void bsl_led_onoff(u8 on)
 
 static event_type_t Fun_CtrlSMEventHandle(event_type_t event)
 {
-    if (fun_control_sm == CONTROL)
+    if (fun_bound_sm == CONTROL)
     {
         switch(event)
         {
@@ -95,10 +95,10 @@ static event_type_t Fun_CtrlSMEventHandle(event_type_t event)
                 bsl_led_onoff((key2_press_cnt-1)%2);
                 break;
             case EVENT_KEY1_LONG_PRESSED://进入绑定状态
-                fun_control_sm = BOUND;
+                fun_bound_sm = BOUND;
                 break;
             case EVENT_KEY2_LONG_PRESSED://进入解绑状态
-                fun_control_sm = UNBOUND; 
+                fun_bound_sm = UNBOUND; 
                 break;
             default:
                 break;
