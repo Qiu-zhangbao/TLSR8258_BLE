@@ -36,12 +36,25 @@ typedef struct{//16byte
     u8 bound_state;
 }adv_date_t;
 
+typedef struct{//16byte
+    u8 src_mac_adr[6];
+	u8 dst_mac_adr[6];
+    u8 op_code;
+    u8 op_code_sub;
+    u8 led_state;
+    u8 bound_state;
+}scan_date_t;
+
 
 extern u8  device_mac_adr[6];
+extern u8  bound_mac_adr[6];
 
 
-
-
+#define OPCODE_LED_ONOFF 0x80
+#define LED_ON 0x01
+#define LED_OFF 0
+#define OPCODE_LED_BOUND 0x81
+#define OPCODE_LED_UNBOUND 0x82
 
 
 
@@ -49,7 +62,7 @@ extern u8  device_mac_adr[6];
 
 void bsl_adv_init(void);
 void bsl_adv_led_onoff(u8 on);
-
+void bsl_adv_recive_data(u8 * data, u32 len);
 
 
 #endif

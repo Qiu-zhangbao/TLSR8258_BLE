@@ -32,6 +32,7 @@
 #include "global_event_queue.h"
 #include "fun_control.h"
 #include "bsl_adv.h"
+#include "tinyFlash/tinyFlash.h"
 #define	MY_RF_POWER_INDEX	RF_POWER_P3p01dBm
 
 
@@ -74,7 +75,7 @@ MYFIFO_INIT(blt_txfifo, TX_FIFO_SIZE, TX_FIFO_NUM);
 
 /////////////////////PARA////////////////////////////
 u8  device_mac_adr[6];
-
+u8  bound_mac_adr[6];
 
 
 
@@ -143,39 +144,8 @@ int controller_event_callback (u32 h, u8 *p, int n)
 				event_adv_report_t *pa = (event_adv_report_t *)p;
 				if(pa->mac[5]==0xA4&&pa->mac[4]==0xC1&&pa->mac[3]==0x38)//筛选灯和遥控器
 				{
-					#if (DEVICE_TYPE == REMOTE)
-
-					#elif(DEVICE_TYPE == LIGHT)
-					// at_print_array(pa->data, pa->len);
-					// at_print("\r\n");
-
-					char * data=pa->data;
-					unsigned char buf[62] = { 0 };
-					const unsigned char hextab[16] = { '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-					for(int i =0; i < pa->len; i ++)
-					{
-						buf[i*2] = hextab[(data[i] >> 4)];
-						buf[i*2 +1] = hextab[(data[i]&0xf)];
-					}
-					if(buf[54]=='8'&&buf[55]=='0')//开关灯命令
-					{
-						if(buf[57]=='1')
-						{
-							device_led_setup(led_cfg[LIGHT_LED_ON]);
-							//at_print("on\r\n");
-						}
-						else if(buf[57]=='0')
-						{
-							device_led_setup(led_cfg[LIGHT_LED_OFF]);
-							//at_print("off\r\n");
-						}
-					}
-					#endif
-
+					bsl_adv_recive_data(pa->data, pa->len);
 				}
-
-				
-				
 			}
 			//--------hci le event: le data length change event ----------------------------------------
 			else if (subEvt_code == HCI_SUB_EVT_LE_DATA_LENGTH_CHANGE)
@@ -258,8 +228,12 @@ void user_init_normal(void)
 	blt_soft_timer_init();
 	blt_soft_timer_add(ui_process,10*1000);//100ms
 	Init_event_queue();//事件队列
-	bsl_adv_init();
 
+	tinyFlash_Init(0x70000,0x4000); //初始化KV存储系统
+	tinyFlash_Read(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr)); 
+
+	bsl_adv_init();
+	
 	#if (DEVICE_TYPE == REMOTE)
 	OLED_Init();
 	OLED_Clear();

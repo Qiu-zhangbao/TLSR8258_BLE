@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-/////////////////// Device  /////////////////////////////////
+/////////////////// Device Select /////////////////////////////////
 
 #define REMOTE  	1
 
@@ -40,7 +40,7 @@ extern "C" {
 
 #define DONG 	 	2
 
-#define DEVICE_BOARD  	DONG
+#define DEVICE_BOARD  	KIT
 
 
 
@@ -88,7 +88,10 @@ enum{
 };
 #endif
 
-
+enum
+{
+    STORAGE_BOUND_MAC = 1,
+};
 
 //////////////////// DMA ///////////////////////////
 #define 	SLAVE_DMA_MODE_ADDR_WRITE		0x44a00  //i2c master write data to  0x4A000
