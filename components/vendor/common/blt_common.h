@@ -29,7 +29,7 @@
 
 
 
-void blc_initMacAddress(int flash_addr, u8 *mac_public, u8 *mac_random_static);
+void blc_initMacAddress(int flash_addr, u8 *mac_public);
 
 
 

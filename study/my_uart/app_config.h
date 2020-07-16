@@ -34,13 +34,13 @@ extern "C" {
 
 #define LIGHT 	 	2
 
-#define DEVICE_TYPE  	REMOTE
+#define DEVICE_TYPE  	LIGHT
 
 #define KIT  		1
 
 #define DONG 	 	2
 
-#define DEVICE_BOARD  	KIT
+#define DEVICE_BOARD  	DONG
 
 
 
@@ -57,7 +57,11 @@ enum{
 //////////////////// LED CONFIG (EVK board) ///////////////////////////
 
 #if (DEVICE_BOARD == KIT)
+#if (DEVICE_TYPE == REMOTE)
 #define	GPIO_LED						GPIO_PC3//123:B4 C4 C3:
+#else
+#define	GPIO_LED						GPIO_PC4//123:B4 C4 C3:
+#endif
 #elif(DEVICE_BOARD == DONG)
 #define	GPIO_LED						GPIO_PB0
 #endif

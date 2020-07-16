@@ -4,6 +4,8 @@
 #include "tl_common.h"
 #include "drivers.h"
 
+#if (DEVICE_TYPE == REMOTE)
+
 #define KEY1_PIN    GPIO_PD2
 #define KEY2_PIN    GPIO_PB5
 
@@ -15,7 +17,7 @@
 void key_init(void);
 void key_scan(void);
 
-
+#endif
 #endif
 
 

@@ -24,8 +24,8 @@
 #include "drivers.h"
 #include "hdl_key.h"
 #include "global_event_queue.h"
-#define UI_BUTTON_ENABLE 1
-#if (UI_BUTTON_ENABLE)
+
+#if (DEVICE_TYPE == REMOTE)
 
 /////////////////////////////////////////////////////////////////////
 

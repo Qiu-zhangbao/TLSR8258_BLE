@@ -31,6 +31,7 @@
 #include "app_uart.h"
 #include "global_event_queue.h"
 #include "fun_control.h"
+#include "bsl_adv.h"
 #define	MY_RF_POWER_INDEX	RF_POWER_P3p01dBm
 
 
@@ -57,8 +58,6 @@ led_cfg_t led_cfg[] = {
 };
 
 #endif
-
-
 #endif
 
 
@@ -72,6 +71,11 @@ MYFIFO_INIT(blt_rxfifo, RX_FIFO_SIZE, RX_FIFO_NUM);
 MYFIFO_INIT(blt_txfifo, TX_FIFO_SIZE, TX_FIFO_NUM);
 
 #define MTU_SIZE_SETTING   			 		247
+
+/////////////////////PARA////////////////////////////
+u8  device_mac_adr[6];
+
+
 
 
 int ui_process(void);
@@ -137,47 +141,41 @@ int controller_event_callback (u32 h, u8 *p, int n)
 			{
 				//after controller is set to scan state, it will report all the adv packet it received by this event
 				event_adv_report_t *pa = (event_adv_report_t *)p;
-				s8 rssi = pa->data[pa->len];
-				if(rssi!=0)
+				if(pa->mac[5]==0xA4&&pa->mac[4]==0xC1&&pa->mac[3]==0x38)//筛选灯和遥控器
 				{
+					#if (DEVICE_TYPE == REMOTE)
 
-				// u_sprintf((char*)at_print_buf, "%d,%02X", rssi,pa->mac[5]);
-				// //u_sprintf((char*)at_print_buf, "+ADV:%d,%02X%02X%02X%02X%02X%02X,", rssi,pa->mac[5],pa->mac[4],pa->mac[3],pa->mac[2],pa->mac[1],pa->mac[0]);
-				// at_print(at_print_buf);
+					#elif(DEVICE_TYPE == LIGHT)
+					// at_print_array(pa->data, pa->len);
+					// at_print("\r\n");
 
-				//if(pa->mac[5]==0x30&&pa->mac[4]==0x1B&&pa->mac[3]==0x97&&pa->mac[2]==0x0F&&pa->mac[1]==0x37&&pa->mac[0]==0x05)
-				// 遥控器在下面
-				// if(pa->mac[5]==0x30&&pa->mac[4]==0x1B&&pa->mac[3]==0x97&&pa->mac[2]==0x0F&&pa->mac[1]==0x26&&pa->mac[0]==0xE0)
-				
-				// {
-				// 	char * data=pa->data;
-				// 	unsigned char buf[128] = { 0 };
-				// 	const unsigned char hextab[16] = { '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-				// 	for(int i =0; i < pa->len; i ++)
-				// 	{
-				// 	buf[i*2] = hextab[(data[i] >> 4)];
-				// 	buf[i*2 +1] = hextab[(data[i]&0xf)];
-				// 	}
-				// 	//at_print(&buf[11]);
-				// 	// at_print("\r\n");
-				// 	if(buf[11]=='3')
-				// 	{
-				// 		device_led_setup(led_cfg[LED_ON]);
-				// 		//at_print("on\r\n");
-				// 	}
-				// 	else if(buf[11]=='4')
-				// 	{
-				// 		device_led_setup(led_cfg[LED_OFF]);
-				// 		//at_print("off\r\n");
-				// 	}
+					char * data=pa->data;
+					unsigned char buf[62] = { 0 };
+					const unsigned char hextab[16] = { '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+					for(int i =0; i < pa->len; i ++)
+					{
+						buf[i*2] = hextab[(data[i] >> 4)];
+						buf[i*2 +1] = hextab[(data[i]&0xf)];
+					}
+					if(buf[54]=='8'&&buf[55]=='0')//开关灯命令
+					{
+						if(buf[57]=='1')
+						{
+							device_led_setup(led_cfg[LIGHT_LED_ON]);
+							//at_print("on\r\n");
+						}
+						else if(buf[57]=='0')
+						{
+							device_led_setup(led_cfg[LIGHT_LED_OFF]);
+							//at_print("off\r\n");
+						}
+					}
+					#endif
 
-				// }
-
-				// at_print_array(pa->data, pa->len);
-				
-				// at_print("\r\n");
-				
 				}
+
+				
+				
 			}
 			//--------hci le event: le data length change event ----------------------------------------
 			else if (subEvt_code == HCI_SUB_EVT_LE_DATA_LENGTH_CHANGE)
@@ -196,17 +194,15 @@ int controller_event_callback (u32 h, u8 *p, int n)
 
 void adv_scan(void)
 {
-	u8  mac_public[6];
-	u8  mac_random_static[6];
-	blc_initMacAddress(CFG_ADR_MAC, mac_public, mac_random_static); //初始化MAC地址
+	blc_initMacAddress(CFG_ADR_MAC, device_mac_adr); //初始化MAC地址
 
 	////// Controller Initialization  //////////
 	blc_ll_initBasicMCU();   //初始化MCU
 
-	blc_ll_initStandby_module(mac_public);		//初始化蓝牙待机功能模块
+	blc_ll_initStandby_module(device_mac_adr);		//初始化蓝牙待机功能模块
 
-	blc_ll_initAdvertising_module(mac_public);  //初始化蓝牙广播功能模块
-	blc_ll_initScanning_module(mac_public); 	//scan module: 		 mandatory for BLE master,
+	blc_ll_initAdvertising_module(device_mac_adr);  //初始化蓝牙广播功能模块
+	blc_ll_initScanning_module(device_mac_adr); 	//scan module: 		 mandatory for BLE master,
 
 #if (DEVICE_TYPE == REMOTE)
 	u8 status = bls_ll_setAdvParam( ADV_INTERVAL_3_125MS , //广播时间间隔最小值
@@ -253,12 +249,12 @@ void user_init_normal(void)
 	random_generator_init();  //初始化随机数生成器
 	adv_scan();
 	rf_set_power_level_index (MY_RF_POWER_INDEX); //设置发射功率
+	#if (DEVICE_BOARD == KIT)
 	app_uart_init(); //初始化串口，用于调试打印输出
+	#endif
 	irq_enable();
 	
-	#if (BLT_APP_LED_ENABLE)
-	device_led_init(GPIO_LED, LED_ON_LEVAL);  //LED initialization
-	#endif
+
 	blt_soft_timer_init();
 	blt_soft_timer_add(ui_process,10*1000);//100ms
 	Init_event_queue();//事件队列
@@ -270,6 +266,11 @@ void user_init_normal(void)
 	key_init();
 	fun_control_init();
 	#endif
+
+	#if (BLT_APP_LED_ENABLE)
+	device_led_init(GPIO_LED, LED_ON_LEVAL);  //LED initialization
+	#endif
+
 }
 
 int ui_process(void)
