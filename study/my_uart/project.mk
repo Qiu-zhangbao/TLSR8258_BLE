@@ -12,6 +12,9 @@ $(OUT_PATH)/hdl_oled.o\
 $(OUT_PATH)/hdl_key.o\
 $(OUT_PATH)/global_event_queue.o\
 $(OUT_PATH)/fun_control.o\
+$(OUT_PATH)/fun_bound.o\
+$(OUT_PATH)/fun_unbound.o\
+$(OUT_PATH)/bsl_adv.o\
 
 
 # Each subdirectory must supply rules for building sources it contributes

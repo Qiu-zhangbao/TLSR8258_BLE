@@ -45,8 +45,8 @@ led_cfg_t led_cfg[] = {
 		{100,	  100 ,   2,	  5,    },// REMOTE_LED_BOUND_FAIL,
 		{500,	  500 ,   2,	  4,	 },// REMOTE_LED_UNBOUND_SUCCESS,
 		{100,	  100 ,   2,	  3, 	 },// REMOTE_LED_UNBOUND_FAIL,
-		{1000,	  1000 ,  100,	  2, 	 },// REMOTE_LED_BOUND_MODE,
-		{100,	  1000 ,  100,	  1, 	 },// REMOTE_LED_UNBOUND_MODE,
+		{1000,	  1000 ,  180,	  2, 	 },// REMOTE_LED_BOUND_MODE,
+		{100,	  1000 ,  180,	  1, 	 },// REMOTE_LED_UNBOUND_MODE,
 };
 #elif(DEVICE_TYPE == LIGHT)
 led_cfg_t led_cfg[] = {
@@ -61,15 +61,6 @@ led_cfg_t led_cfg[] = {
 
 #endif
 
-static u32 host_update_conn_param_req;
-
-static u32 connect_event_occurTick;
-
-static u32 dle_started_flg;
-static u32 mtuExchange_started_flg;
-
-
-_attribute_data_retention_ u32 cur_conn_device_hdl; //conn_handle
 
 #define RX_FIFO_SIZE						288  //rx-24   max:251+24 = 275  16 align-> 288
 #define RX_FIFO_NUM							8
@@ -116,15 +107,12 @@ int controller_event_callback (u32 h, u8 *p, int n)
 
 			u_sprintf(at_print_buf,"+DISCONNECT(%x)\r\n", pd->reason);
 			at_print(at_print_buf);
-			
-			connect_event_occurTick = 0;
-			host_update_conn_param_req = 0; //when disconnect, clear update conn flag
-			cur_conn_device_hdl = 0;  //when disconnect, clear conn handle
+	
 
 			//MTU size exchange and data length exchange procedure must be executed on every new connection,
 			//so when connection terminate, relative flags must be cleared
-			dle_started_flg = 0;
-			mtuExchange_started_flg = 0;
+			
+	
 
 			//MTU size reset to default 23 bytes when connection terminated
 			blt_att_resetEffectiveMtuSize(pd->handle | (pd->hh<<8));  //stack API, user can not change
@@ -141,8 +129,7 @@ int controller_event_callback (u32 h, u8 *p, int n)
 				if (pCon->status == BLE_SUCCESS)	// status OK
 				{
 					at_print("OK\r\n");
-					cur_conn_device_hdl = pCon->handle;   //mark conn handle, in fact this equals to BLM_CONN_HANDLE
-					connect_event_occurTick = clock_time()|1;
+			
 				}
 			}
 			//--------hci le event: le adv report event ----------------------------------------
@@ -151,17 +138,15 @@ int controller_event_callback (u32 h, u8 *p, int n)
 				//after controller is set to scan state, it will report all the adv packet it received by this event
 				event_adv_report_t *pa = (event_adv_report_t *)p;
 				s8 rssi = pa->data[pa->len];
-				
-				
-
 				if(rssi!=0)
 				{
+
 				// u_sprintf((char*)at_print_buf, "%d,%02X", rssi,pa->mac[5]);
 				// //u_sprintf((char*)at_print_buf, "+ADV:%d,%02X%02X%02X%02X%02X%02X,", rssi,pa->mac[5],pa->mac[4],pa->mac[3],pa->mac[2],pa->mac[1],pa->mac[0]);
 				// at_print(at_print_buf);
 
 				//if(pa->mac[5]==0x30&&pa->mac[4]==0x1B&&pa->mac[3]==0x97&&pa->mac[2]==0x0F&&pa->mac[1]==0x37&&pa->mac[0]==0x05)
-				//遥控器在下面
+				// 遥控器在下面
 				// if(pa->mac[5]==0x30&&pa->mac[4]==0x1B&&pa->mac[3]==0x97&&pa->mac[2]==0x0F&&pa->mac[1]==0x26&&pa->mac[0]==0xE0)
 				
 				// {
@@ -202,7 +187,6 @@ int controller_event_callback (u32 h, u8 *p, int n)
 				// printf("Effective Max Rx Octets: %d\n", dle_param->maxRxOct);
 				// printf("Effective Max Tx Octets: %d\n", dle_param->maxTxOct);
 
-				dle_started_flg = 1;
 			}	
 		}
 	}
@@ -224,10 +208,17 @@ void adv_scan(void)
 	blc_ll_initAdvertising_module(mac_public);  //初始化蓝牙广播功能模块
 	blc_ll_initScanning_module(mac_public); 	//scan module: 		 mandatory for BLE master,
 
-	//blc_ll_initScanning_module(mac_public); 	//scan module: 		 mandatory for BLE master,
-	u8 tbl_advData[] = { 0x05, 0x09, 'A', 'B', 'C', 'D'}; //要广播的数据
-	bls_ll_setAdvData( (u8 *)tbl_advData, sizeof(tbl_advData) ); //设置广播数据
+#if (DEVICE_TYPE == REMOTE)
+	u8 status = bls_ll_setAdvParam( ADV_INTERVAL_3_125MS , //广播时间间隔最小值
+									ADV_INTERVAL_3_125MS , //广播时间间隔最大值
+									ADV_TYPE_NONCONNECTABLE_UNDIRECTED, //广播类型，不可连接非定向
+									OWN_ADDRESS_PUBLIC, //自身地址类型
+									0,  //定向地址类型
+									NULL, //定向地址
+									BLT_ENABLE_ADV_ALL, //在全部广播信道(37,38,39)都广播数据
+									ADV_FP_NONE); //过滤策略
 
+#elif(DEVICE_TYPE == LIGHT)
 	u8 status = bls_ll_setAdvParam( ADV_INTERVAL_100MS , //广播时间间隔最小值
 									ADV_INTERVAL_100MS , //广播时间间隔最大值
 									ADV_TYPE_NONCONNECTABLE_UNDIRECTED, //广播类型，不可连接非定向
@@ -236,6 +227,9 @@ void adv_scan(void)
 									NULL, //定向地址
 									BLT_ENABLE_ADV_ALL, //在全部广播信道(37,38,39)都广播数据
 									ADV_FP_NONE); //过滤策略
+
+#endif
+									
 
 	if(status != BLE_SUCCESS)//如果设置广播参数失败
 	{
@@ -253,8 +247,6 @@ void adv_scan(void)
 
 	blc_ll_addScanningInAdvState();
 }
-u32 t=0;
-
 
 void user_init_normal(void)
 {
@@ -263,16 +255,21 @@ void user_init_normal(void)
 	rf_set_power_level_index (MY_RF_POWER_INDEX); //设置发射功率
 	app_uart_init(); //初始化串口，用于调试打印输出
 	irq_enable();
-	OLED_Init();
-	OLED_Clear();
+	
 	#if (BLT_APP_LED_ENABLE)
 	device_led_init(GPIO_LED, LED_ON_LEVAL);  //LED initialization
 	#endif
 	blt_soft_timer_init();
-	key_init();
 	blt_soft_timer_add(ui_process,10*1000);//100ms
 	Init_event_queue();//事件队列
+	bsl_adv_init();
+
+	#if (DEVICE_TYPE == REMOTE)
+	OLED_Init();
+	OLED_Clear();
+	key_init();
 	fun_control_init();
+	#endif
 }
 
 int ui_process(void)
@@ -293,3 +290,4 @@ _attribute_ram_code_ void main_loop (void)
 	blt_sdk_main_loop();
 	blt_soft_timer_process(MAINLOOP_ENTRY);
 }
+

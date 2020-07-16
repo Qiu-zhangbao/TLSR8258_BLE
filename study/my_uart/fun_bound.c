@@ -1,5 +1,6 @@
 
 #include "fun_bound.h"
+#include "fun_control.h"
 #include "tl_common.h"
 #include "drivers.h"
 #include "global_event_queue.h"
@@ -7,15 +8,16 @@
 #include "vendor/common/blt_led.h"
 #include "hdl_oled.h"
 #include <stack/ble/ble.h>
-static event_type_t Fun_CtrlSMEventHandle(event_type_t event);
+
+#if (DEVICE_TYPE == REMOTE)
+
+static event_type_t fun_boundevent_handle(event_type_t event);
 int fun_bound_process(void);
-fun_bound_sm_t fun_bound_sm = CONTROL;
-fun_bound_sm_t fun_bound_sm_last = UNBOUND;
-u8 key2_press_cnt=0;
+
 
 void fun_bound_init(void)
 {
-    resgister_event_handle(Fun_CtrlSMEventHandle,   EVENT_KEY1_SHORT_PRESSED |  EVENT_KEY2_SHORT_PRESSED | \
+    resgister_event_handle(fun_boundevent_handle,   EVENT_KEY1_SHORT_PRESSED |  EVENT_KEY2_SHORT_PRESSED | \
     EVENT_KEY1_LONG_PRESSED	 |  EVENT_KEY2_LONG_PRESSED  |  EVENT_KEY1_AND_KEY2_PRESSED );
     blt_soft_timer_add(fun_bound_process,100*1000);//100ms
 }
@@ -23,82 +25,37 @@ void fun_bound_init(void)
 
 int fun_bound_process(void)
 {
-    fun_bound_sm_mgr(fun_bound_sm);
+    
+	
 	return 0;
 }
 
-
-
-
-void fun_bound_sm_mgr(fun_bound_sm_t sm_state)
+void fun_bound_in(void)
 {
-	if(sm_state == fun_bound_sm_last)
-		return;
-	switch(fun_bound_sm_last) 
-	{
-		case CONTROL:	
-        	OLED_Clear();
-            break;                          
-		case BOUND:         
-			OLED_Clear();
-			break;                          
-		case UNBOUND:           
-			OLED_Clear();
-			break;                            
-	
-	}
-	switch(sm_state)
-	{
-		case CONTROL:	
-            OLED_ShowString(30,0,"bound",16);
-            OLED_ShowString(30,4,"state:",16);
-            OLED_ShowNum(80,4,0,1,16);
-			break;
-		case BOUND:
-			OLED_ShowString(30,0,"bound",16);
-			break;
-		case UNBOUND:	
-            OLED_ShowString(30,0,"unbound",16);
-			break;
-	
-	}
-	
-	fun_bound_sm_last = sm_state;
+	OLED_ShowString(30,0,"bound",16);
+	device_led_setup(led_cfg[REMOTE_LED_BOUND_MODE]);//绑定模式开始闪烁
 }
-
-void bsl_led_onoff(u8 on)
+void fun_bound_out(void)
 {
-	if (on)
-	{
-		u8 tbl_advData[] = { 0x05, 0x09, 'A', 'B', 'C', 'D'}; //要广播的数据
-		bls_ll_setAdvData( (u8 *)tbl_advData, sizeof(tbl_advData) ); //设置广播数据
-        OLED_ShowNum(80,4,0,1,16);
-	}
-	else
-	{
-		u8 tbl_advData[] = { 0x05, 0x09, 'A', 'B', 'C', 'C'}; //要广播的数据
-		bls_ll_setAdvData( (u8 *)tbl_advData, sizeof(tbl_advData) ); //设置广播数据
-        OLED_ShowNum(80,4,1,1,16);
-	}
+	OLED_Clear();
+	device_led_setup(led_cfg[REMOTE_LED_KEY_PRESS]);//取消闪烁
 }
 
 
-static event_type_t Fun_CtrlSMEventHandle(event_type_t event)
+static event_type_t fun_boundevent_handle(event_type_t event)
 {
-    if (fun_bound_sm == CONTROL)
+    if (fun_control_sm == BOUND)
     {
         switch(event)
         {
-            case EVENT_KEY2_SHORT_PRESSED:
-                device_led_setup(led_cfg[REMOTE_LED_KEY_PRESS]);
-                key2_press_cnt++;
-                bsl_led_onoff((key2_press_cnt-1)%2);
+			case EVENT_KEY1_SHORT_PRESSED://选灯
+				
                 break;
-            case EVENT_KEY1_LONG_PRESSED://进入绑定状态
-                fun_bound_sm = BOUND;
-                break;
-            case EVENT_KEY2_LONG_PRESSED://进入解绑状态
-                fun_bound_sm = UNBOUND; 
+			case EVENT_KEY1_LONG_PRESSED://确认选择
+			
+			break;
+            case EVENT_KEY2_SHORT_PRESSED://退出绑定
+				fun_control_sm = CONTROL;
                 break;
             default:
                 break;
@@ -109,7 +66,7 @@ static event_type_t Fun_CtrlSMEventHandle(event_type_t event)
 
 
 
-
+#endif
 
 
 
