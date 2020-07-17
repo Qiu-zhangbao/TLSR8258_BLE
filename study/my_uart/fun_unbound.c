@@ -34,6 +34,7 @@ void fun_unbound_in(void)
 {
 	OLED_ShowString(30,0,"unbound",16);
     device_led_setup(led_cfg[REMOTE_LED_UNBOUND_MODE]);
+    bsl_adv_led_all_bound(0);
 }
 void fun_unbound_out(void)
 {

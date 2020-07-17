@@ -78,6 +78,7 @@ enum{
 	REMOTE_LED_UNBOUND_FAIL,
 	REMOTE_LED_BOUND_MODE,
 	REMOTE_LED_UNBOUND_MODE,
+	LIGHT_LED_RECOVER,
 };
 #elif(DEVICE_TYPE == LIGHT)
 enum{
@@ -91,6 +92,7 @@ enum{
 enum
 {
     STORAGE_BOUND_MAC = 1,
+	STORAGE_RESET_CNT,
 };
 
 //////////////////// DMA ///////////////////////////

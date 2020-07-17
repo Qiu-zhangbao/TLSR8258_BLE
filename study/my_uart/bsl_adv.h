@@ -63,6 +63,8 @@ extern u8  bound_mac_adr[6];
 void bsl_adv_init(void);
 void bsl_adv_led_onoff(u8 on);
 void bsl_adv_recive_data(u8 * data, u32 len);
+void bsl_adv_led_all_bound(u8 on);
+
 
 
 #endif

@@ -34,6 +34,7 @@ void fun_bound_in(void)
 {
 	OLED_ShowString(30,0,"bound",16);
 	device_led_setup(led_cfg[REMOTE_LED_BOUND_MODE]);//绑定模式开始闪烁
+    bsl_adv_led_all_bound(1);
 }
 void fun_bound_out(void)
 {

@@ -36,7 +36,7 @@
 #endif
 
 
-#define 	MAX_TIMER_NUM							10   //timer max number
+#define 	MAX_TIMER_NUM							20   //timer max number
 
 
 #define		MAINLOOP_ENTRY							0

@@ -49,6 +49,7 @@ led_cfg_t led_cfg[] = {
 		{100,	  100 ,   2,	  3, 	 },// REMOTE_LED_UNBOUND_FAIL,
 		{1000,	  1000 ,  180,	  2, 	 },// REMOTE_LED_BOUND_MODE,
 		{100,	  1000 ,  180,	  1, 	 },// REMOTE_LED_UNBOUND_MODE,
+		{1000,	  1000 ,  3,	  3,	 },// LIGHT_LED_RECOVER,	
 };
 #elif(DEVICE_TYPE == LIGHT)
 led_cfg_t led_cfg[] = {
@@ -75,10 +76,10 @@ MYFIFO_INIT(blt_txfifo, TX_FIFO_SIZE, TX_FIFO_NUM);
 
 /////////////////////PARA////////////////////////////
 u8  device_mac_adr[6];
-u8  bound_mac_adr[6];
-
-
-
+ //u8  bound_mac_adr[6]={0x1F,0x21,0xF2,0x38,0xC1,0xA4};
+//u8  bound_mac_adr[6]={0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+u8  bound_mac_adr[6]={0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+u8 reset_cnt=0;
 int ui_process(void);
 
 //////////////////////////////////////////////////////////
@@ -145,6 +146,8 @@ int controller_event_callback (u32 h, u8 *p, int n)
 				if(pa->mac[5]==0xA4&&pa->mac[4]==0xC1&&pa->mac[3]==0x38)//筛选灯和遥控器
 				{
 					bsl_adv_recive_data(pa->data, pa->len);
+					// at_print_array(pa->data, pa->len);
+					// at_print("\r\n");
 				}
 			}
 			//--------hci le event: le data length change event ----------------------------------------
@@ -213,7 +216,49 @@ void adv_scan(void)
 
 	blc_ll_addScanningInAdvState();
 }
+void global_var_init(void)
+{
+	tinyFlash_Init(0x70000,0x4000); //初始化KV存储系统
 
+	u8 len=6;
+	// tinyFlash_Format();
+	//tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr)); 
+	tinyFlash_Read(STORAGE_BOUND_MAC, bound_mac_adr, &len); 
+	
+}
+
+///////////////////////////////////////////////////////上电五次清数据////////////////////////////////////////////////////////////
+
+int reset_cnt_clera(void)
+{
+	reset_cnt = 0;
+	tinyFlash_Write(STORAGE_RESET_CNT, &reset_cnt, 1);
+	return -1;
+}
+int factory_reset_cnt_check ()
+{
+	u8 len=1;
+	tinyFlash_Read(STORAGE_RESET_CNT, &reset_cnt, &len); 
+	if (reset_cnt>3)//第5次进来
+	{
+		len=6;
+		reset_cnt=0;
+		u8  ff_mac_adr[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+		tinyFlash_Write(STORAGE_RESET_CNT, &reset_cnt, 1); //复位标记
+		memcpy(&bound_mac_adr, &ff_mac_adr, sizeof(bound_mac_adr));
+		tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, &len); //清除地址
+		device_led_setup(led_cfg[LIGHT_LED_RECOVER]);//闪烁
+	}
+	else
+	{
+		reset_cnt++;
+		tinyFlash_Write(STORAGE_RESET_CNT, &reset_cnt, 1);
+		blt_soft_timer_add(reset_cnt_clera,3000*1000);//100ms
+	}
+	
+}
+
+//////////////////////////////////////////////////////初始化/////////////////////////////////////////////////////////
 void user_init_normal(void)
 {
 	random_generator_init();  //初始化随机数生成器
@@ -223,16 +268,10 @@ void user_init_normal(void)
 	app_uart_init(); //初始化串口，用于调试打印输出
 	#endif
 	irq_enable();
-	
-
+	global_var_init();
 	blt_soft_timer_init();
 	blt_soft_timer_add(ui_process,10*1000);//100ms
 	Init_event_queue();//事件队列
-
-	tinyFlash_Init(0x70000,0x4000); //初始化KV存储系统
-	tinyFlash_Read(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr)); 
-
-	bsl_adv_init();
 	
 	#if (DEVICE_TYPE == REMOTE)
 	OLED_Init();
@@ -244,6 +283,8 @@ void user_init_normal(void)
 	#if (BLT_APP_LED_ENABLE)
 	device_led_init(GPIO_LED, LED_ON_LEVAL);  //LED initialization
 	#endif
+	factory_reset_cnt_check();
+	bsl_adv_init();
 
 }
 
