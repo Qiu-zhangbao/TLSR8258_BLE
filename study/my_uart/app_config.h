@@ -34,7 +34,7 @@ extern "C" {
 
 #define LIGHT 	 	2
 
-#define DEVICE_TYPE  	LIGHT
+#define DEVICE_TYPE  	REMOTE
 
 #define KIT  		1
 

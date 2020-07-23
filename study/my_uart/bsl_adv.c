@@ -7,7 +7,7 @@
 #include "vendor/common/blt_led.h"
 #include <stack/ble/ble.h>
 #include "tinyFlash/tinyFlash.h"
-
+#include "fun_control.h"
 adv_packet_t adv_packet = {0};
 adv_date_t adv_date = {0};
 scan_date_t scan_date = {0};
@@ -15,7 +15,7 @@ scan_date_t scan_date = {0};
 u8 all_device_adr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
 int bsl_adv_process(void);
-
+void (*bsl_add)(u8 *mac,u8 len);
 
 #if (DEVICE_TYPE == REMOTE)
 
@@ -53,7 +53,10 @@ void bsl_adv_init(void)
 	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
 	blt_soft_timer_add(bsl_adv_process, 10 * 1000);		  //100ms
 }
-
+void bsl_adv_add_callback(void (*add)(u8 *mac))
+{
+	bsl_add=add;
+}
 void bsl_adv_led_onoff(u8 on)
 {
 	if (on)
@@ -246,4 +249,16 @@ void bsl_adv_recive_data(u8 *data, u32 len)
 	scan_date.op_code_sub = data[28];
 	scan_date.led_state = data[29];
 	scan_date.bound_state = data[30];
+
+#if (DEVICE_TYPE == REMOTE)
+	if (fun_control_sm == BOUND && scan_date.bound_state == 0 )
+	{
+		bsl_add(&scan_date.src_mac_adr,sizeof(scan_date.src_mac_adr));	
+	}
+	else if (fun_control_sm == UNBOUND && scan_date.bound_state == 1 )
+	{
+		//bsl_add(&scan_date.src_mac_adr,sizeof(scan_date.src_mac_adr));	
+	}
+#endif
+	
 }

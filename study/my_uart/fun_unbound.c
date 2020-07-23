@@ -8,7 +8,7 @@
 #include "vendor/common/blt_led.h"
 #include "hdl_oled.h"
 #include <stack/ble/ble.h>
-
+#include "bsl_adv.h"
 #if (DEVICE_TYPE == REMOTE)
 
 static event_type_t fun_unboundevent_handle(event_type_t event);
@@ -34,13 +34,11 @@ void fun_unbound_in(void)
 {
 	OLED_ShowString(30,0,"unbound",16);
     device_led_setup(led_cfg[REMOTE_LED_UNBOUND_MODE]);
-    bsl_adv_led_all_bound(0);
 }
 void fun_unbound_out(void)
 {
 	OLED_Clear();
     device_led_setup(led_cfg[REMOTE_LED_KEY_PRESS]);//取消闪烁
-
 }
 
 
@@ -51,7 +49,7 @@ static event_type_t fun_unboundevent_handle(event_type_t event)
         switch(event)
         {
 			case EVENT_KEY1_SHORT_PRESSED://选灯
-                
+                bsl_adv_led_all_bound(0);
                 break;
 			case EVENT_KEY1_LONG_PRESSED://确认选择
 			
