@@ -33,6 +33,7 @@
 #include "fun_control.h"
 #include "bsl_adv.h"
 #include "tinyFlash/tinyFlash.h"
+
 #define	MY_RF_POWER_INDEX	RF_POWER_P3p01dBm
 
 
@@ -56,7 +57,8 @@ led_cfg_t led_cfg[] = {
 		{100,     0,      0xff,      0,	},// LIGHT_LED_ON = 0,
 		{0,	  	100 ,	  1,	  1,    },// LIGHT_LED_OFF,
 		{500,	  500 ,   1,	  2,    },// LIGHT_LED_SELECT,
-		{1000,	  1000 ,  3,	  3,	 },// LIGHT_LED_RECOVER,		
+		{1000,	  1000 ,  3,	  3,	},// LIGHT_LED_RECOVER,	
+		{100,	  200 ,  3,	  4,	},// LIGHT_LED_RECOVER,		
 };
 
 #endif
@@ -235,7 +237,7 @@ int reset_cnt_clera(void)
 	tinyFlash_Write(STORAGE_RESET_CNT, &reset_cnt, 1);
 	return -1;
 }
-int factory_reset_cnt_check ()
+void factory_reset_cnt_check (void)
 {
 	u8 len=1;
 	tinyFlash_Read(STORAGE_RESET_CNT, &reset_cnt, &len); 
@@ -246,7 +248,7 @@ int factory_reset_cnt_check ()
 		u8  ff_mac_adr[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 		tinyFlash_Write(STORAGE_RESET_CNT, &reset_cnt, 1); //复位标记
 		memcpy(&bound_mac_adr, &ff_mac_adr, sizeof(bound_mac_adr));
-		tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, &len); //清除地址
+		tinyFlash_Write(STORAGE_BOUND_MAC, (unsigned char *)bound_mac_adr, len); //清除地址
 		device_led_setup(led_cfg[LIGHT_LED_RECOVER]);//闪烁
 	}
 	else
@@ -283,7 +285,11 @@ void user_init_normal(void)
 	#if (BLT_APP_LED_ENABLE)
 	device_led_init(GPIO_LED, LED_ON_LEVAL);  //LED initialization
 	#endif
+
+	#if (DEVICE_TYPE == LIGHT)
 	factory_reset_cnt_check();
+	#endif
+
 	bsl_adv_init();
 
 }

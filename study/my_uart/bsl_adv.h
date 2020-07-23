@@ -4,7 +4,7 @@
 
 
 #include "tl_common.h"
-
+#include "fun_control.h"
 
 typedef struct{
 
@@ -56,6 +56,9 @@ extern u8  bound_mac_adr[6];
 #define OPCODE_LED_BOUND 0x81
 #define OPCODE_LED_UNBOUND 0x82
 
+#define OPCODE_LED_BOUND_TEXT_ONE 0x83
+#define OPCODE_LED_BOUND_ONE 0x84
+#define OPCODE_LED_UNBOUND_ONE 0x85
 
 
 
@@ -64,8 +67,9 @@ void bsl_adv_init(void);
 void bsl_adv_led_onoff(u8 on);
 void bsl_adv_recive_data(u8 * data, u32 len);
 void bsl_adv_led_all_bound(u8 on);
-void bsl_adv_add_callback(void (*add)(u8 *mac));
-
+void bsl_adv_add_callback(void (*add)(u8 (*mac)[6],u8 len));
+void bsl_adv_one_bound(u8 (*mac)[6], u8 bound, u8 cmd);
+void bsl_adv_remote_state(fun_control_sm_t state );
 
 #endif
 

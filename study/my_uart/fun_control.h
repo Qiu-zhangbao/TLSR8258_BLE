@@ -16,7 +16,7 @@ typedef enum
 }fun_control_sm_t;
 
 extern fun_control_sm_t fun_control_sm;
-
+extern fun_control_sm_t fun_control_sm_now;
 void fun_control_init(void);
 void fun_control_sm_mgr(fun_control_sm_t sm_state);
 

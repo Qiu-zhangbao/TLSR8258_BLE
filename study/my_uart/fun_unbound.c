@@ -19,7 +19,6 @@ void fun_unbound_init(void)
 {
     resgister_event_handle(fun_unboundevent_handle,   EVENT_KEY1_SHORT_PRESSED |  EVENT_KEY2_SHORT_PRESSED | \
     EVENT_KEY1_LONG_PRESSED	 |  EVENT_KEY2_LONG_PRESSED  |  EVENT_KEY1_AND_KEY2_PRESSED );
-    blt_soft_timer_add(fun_unbound_process,100*1000);//100ms
 }
 
 
@@ -34,28 +33,34 @@ void fun_unbound_in(void)
 {
 	OLED_ShowString(30,0,"unbound",16);
     device_led_setup(led_cfg[REMOTE_LED_UNBOUND_MODE]);
+    blt_soft_timer_add(fun_unbound_process,100*1000);//100ms
+    fun_control_sm_now = UNBOUND;
 }
 void fun_unbound_out(void)
 {
 	OLED_Clear();
     device_led_setup(led_cfg[REMOTE_LED_KEY_PRESS]);//取消闪烁
+    blt_soft_timer_delete(fun_unbound_process);
 }
 
 
 static event_type_t fun_unboundevent_handle(event_type_t event)
 {
-    if (fun_control_sm == UNBOUND)
+    if (fun_control_sm_now == UNBOUND)
     {
         switch(event)
         {
 			case EVENT_KEY1_SHORT_PRESSED://选灯
-                bsl_adv_led_all_bound(0);
+              
                 break;
 			case EVENT_KEY1_LONG_PRESSED://确认选择
 			
 			break;
             case EVENT_KEY2_SHORT_PRESSED://退出解绑
 				fun_control_sm = CONTROL;
+                break;
+            case EVENT_KEY1_AND_KEY2_PRESSED://进入解绑状态
+                bsl_adv_led_all_bound(0);
                 break;
             default:
                 break;

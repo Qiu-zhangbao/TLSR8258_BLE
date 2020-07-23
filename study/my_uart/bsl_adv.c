@@ -7,15 +7,15 @@
 #include "vendor/common/blt_led.h"
 #include <stack/ble/ble.h>
 #include "tinyFlash/tinyFlash.h"
-#include "fun_control.h"
-adv_packet_t adv_packet = {0};
-adv_date_t adv_date = {0};
-scan_date_t scan_date = {0};
+
+adv_packet_t adv_packet;
+adv_date_t adv_date;
+scan_date_t scan_date;
 
 u8 all_device_adr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
 int bsl_adv_process(void);
-void (*bsl_add)(u8 *mac,u8 len);
+void (*bsl_add)(u8 (*mac)[6], u8 len);
 
 #if (DEVICE_TYPE == REMOTE)
 
@@ -41,8 +41,8 @@ void bsl_adv_init(void)
 
 	///////////////////change data start///////////////////
 	memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr)); //数据：目标地址
-	adv_date.op_code = 0x80;													//开关灯命令
-	adv_date.op_code_sub = 0;													//开机关灯
+	adv_date.op_code = 0x80;													 //开关灯命令
+	adv_date.op_code_sub = 0;													 //开机关灯
 
 	///////////////////change data end///////////////////
 
@@ -51,11 +51,11 @@ void bsl_adv_init(void)
 	adv_packet.date_len = sizeof(adv_packet.date) + 1;
 
 	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
-	blt_soft_timer_add(bsl_adv_process, 10 * 1000);		  //100ms
+	blt_soft_timer_add(bsl_adv_process, 10 * 1000);			  //100ms
 }
-void bsl_adv_add_callback(void (*add)(u8 *mac))
+void bsl_adv_add_callback(void (*add)(u8 (*mac)[6],u8 len))
 {
-	bsl_add=add;
+	bsl_add = add;
 }
 void bsl_adv_led_onoff(u8 on)
 {
@@ -63,8 +63,8 @@ void bsl_adv_led_onoff(u8 on)
 	{
 		///////////////////change data start///////////////////
 		memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr)); //数据：目标地址
-		adv_date.op_code = 0x80;													//开关灯命令
-		adv_date.op_code_sub = 0;													//开灯
+		adv_date.op_code = 0x80;													 //开关灯命令
+		adv_date.op_code_sub = 0;													 //开灯
 		///////////////////change data end///////////////////
 		memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
 		bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
@@ -73,20 +73,44 @@ void bsl_adv_led_onoff(u8 on)
 	{
 		///////////////////change data start///////////////////
 		memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr)); //数据：目标地址
-		adv_date.op_code = 0x80;													//开关灯命令
-		adv_date.op_code_sub = 1;													//关灯
+		adv_date.op_code = 0x80;													 //开关灯命令
+		adv_date.op_code_sub = 1;													 //关灯
 		///////////////////change data end///////////////////
 		memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
 		bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
 	}
 }
+void bsl_adv_remote_state( fun_control_sm_t state )
+{
+	if (state == CONTROL)
+	{
+		///////////////////change data start///////////////////
+		memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr)); //数据：目标地址
+		adv_date.op_code = 0x80;													 //开关灯命令
+		// adv_date.op_code_sub = 0;													 //开灯
+		///////////////////change data end///////////////////
+		memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
+		bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
+	}
+	else if (state == BOUND)
+	{
+		/* code */
+	}
+	else if (state == UNBOUND)
+	{
+		/* code */
+	}
+	
+
+}
+
 void bsl_adv_led_all_bound(u8 on)
 {
 	if (on)
 	{
 		///////////////////change data start///////////////////
 		memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr)); //数据：目标地址
-		adv_date.op_code = OPCODE_LED_BOUND;													//开关灯命令
+		adv_date.op_code = OPCODE_LED_BOUND;										 //开关灯命令
 		///////////////////change data end///////////////////
 		memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
 		bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
@@ -95,13 +119,43 @@ void bsl_adv_led_all_bound(u8 on)
 	{
 		///////////////////change data start///////////////////
 		memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr)); //数据：目标地址
-		adv_date.op_code = OPCODE_LED_UNBOUND;												//关灯
+		adv_date.op_code = OPCODE_LED_UNBOUND;										 //关灯
 		///////////////////change data end///////////////////
 		memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
 		bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
 	}
 }
-u8 fl=1;
+
+void bsl_adv_one_bound(u8 (*mac)[6], u8 bound, u8 cmd)
+{
+	memcpy(&adv_date.dst_mac_adr, mac, sizeof(adv_date.dst_mac_adr)); //数据：目标地址
+	if (bound)														  //1绑定0解绑
+	{
+		if (cmd) //1确认0测试
+		{
+			adv_date.op_code = OPCODE_LED_BOUND_ONE;
+		}
+		else
+		{
+			adv_date.op_code = OPCODE_LED_BOUND_TEXT_ONE;
+		}
+	}
+	else
+	{
+		if (cmd) //1确认0测试
+		{
+			adv_date.op_code = OPCODE_LED_UNBOUND_ONE;
+		}
+		else
+		{
+			adv_date.op_code = OPCODE_LED_BOUND_TEXT_ONE;
+		}
+	}
+	memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
+	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
+}
+
+u8 fl = 1;
 int bsl_adv_process(void)
 {
 	// if (scan_date.bound_state == 0x01 &&fl ==1 )
@@ -114,8 +168,6 @@ int bsl_adv_process(void)
 }
 
 #elif (DEVICE_TYPE == LIGHT)
-
-
 
 void bsl_change_led_state_adv(u8 state)
 {
@@ -133,9 +185,16 @@ void bsl_change_bound_state_adv(u8 state)
 {
 	///////////////////change data start///////////////////
 	if (state)
+	{
+		memcpy(&adv_date.dst_mac_adr, bound_mac_adr, sizeof(adv_date.dst_mac_adr));
 		adv_date.bound_state = 0x01;
+	}
 	else
+	{
+		memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr));
 		adv_date.bound_state = 0x00;
+	}
+
 	///////////////////change data end///////////////////
 	memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
 	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
@@ -170,9 +229,15 @@ void bsl_adv_init(void)
 	adv_date.led_state = 0x00;
 
 	if (memcmp(all_device_adr, bound_mac_adr, 6) == 0) //没有读取到绑定设备
+	{
+		memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr));
 		adv_date.bound_state = 0x00;
+	}
 	else
+	{
+		memcpy(&adv_date.dst_mac_adr, bound_mac_adr, sizeof(adv_date.dst_mac_adr));
 		adv_date.bound_state = 0x01;
+	}
 
 	///////////////////change data end///////////////////
 
@@ -180,7 +245,7 @@ void bsl_adv_init(void)
 	adv_packet.date_len = sizeof(adv_packet.date) + 1;
 
 	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
-	blt_soft_timer_add(bsl_adv_process, 10 * 1000);		  //100ms
+	blt_soft_timer_add(bsl_adv_process, 10 * 1000);			  //100ms
 }
 
 int bsl_adv_process(void)
@@ -189,7 +254,7 @@ int bsl_adv_process(void)
 	{
 		if (scan_date.op_code == OPCODE_LED_ONOFF)
 		{
-			if (memcmp(&scan_date.src_mac_adr, bound_mac_adr, 6) == 0) //被该遥控器绑定：绑定地址等于自身地址
+			if (memcmp(&scan_date.src_mac_adr, bound_mac_adr, 6) == 0) //被该遥控器绑定：消息源地址等于绑定地址
 			{
 				if (scan_date.op_code_sub == LED_ON)
 				{
@@ -207,23 +272,49 @@ int bsl_adv_process(void)
 		{
 			if (adv_date.bound_state == 0x00) //未绑定
 			{
-				u8 len=6;
 				memcpy(bound_mac_adr, &scan_date.src_mac_adr, sizeof(bound_mac_adr));
-				tinyFlash_Write(STORAGE_BOUND_MAC,bound_mac_adr , sizeof(bound_mac_adr)); 
+				tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr));
 				bsl_change_bound_state_adv(1);
 			}
 		}
 		else if (scan_date.op_code == OPCODE_LED_UNBOUND)
 		{
-			if (adv_date.bound_state == 0x01) //已绑定
+			if (adv_date.bound_state == 0x01 && (memcmp(&scan_date.src_mac_adr, bound_mac_adr, 6) == 0)) //已被该遥控器绑定
 			{
-				u8 len=6;
 				memcpy(bound_mac_adr, all_device_adr, sizeof(bound_mac_adr));
-				tinyFlash_Write(STORAGE_BOUND_MAC,bound_mac_adr , sizeof(bound_mac_adr)); 
+				tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr));
 				bsl_change_bound_state_adv(0);
 			}
 		}
 	}
+	else if (memcmp(&scan_date.dst_mac_adr, device_mac_adr, 6) == 0)
+	{
+		if (scan_date.op_code == OPCODE_LED_BOUND_TEXT_ONE)
+		{
+			device_led_setup(led_cfg[LIGHT_LED_SELECT]);
+		}
+		else if (scan_date.op_code == OPCODE_LED_BOUND_ONE)
+		{
+			if (adv_date.bound_state == 0x00) //未绑定
+			{
+				memcpy(bound_mac_adr, &scan_date.src_mac_adr, sizeof(bound_mac_adr));
+				tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr));
+				bsl_change_bound_state_adv(1);
+				device_led_setup(led_cfg[LIGHT_LED_BOUND_ACK]); //开灯
+			}
+		}
+		else if (scan_date.op_code == OPCODE_LED_UNBOUND_ONE)
+		{
+			if (adv_date.bound_state == 0x01 && (memcmp(&scan_date.src_mac_adr, bound_mac_adr, 6) == 0)) //已被该遥控器绑定
+			{
+				memcpy(bound_mac_adr, all_device_adr, sizeof(bound_mac_adr));
+				tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr));
+				bsl_change_bound_state_adv(0);
+				device_led_setup(led_cfg[LIGHT_LED_BOUND_ACK]); //开灯
+			}
+		}
+	}
+
 	return 0;
 }
 
@@ -251,14 +342,13 @@ void bsl_adv_recive_data(u8 *data, u32 len)
 	scan_date.bound_state = data[30];
 
 #if (DEVICE_TYPE == REMOTE)
-	if (fun_control_sm == BOUND && scan_date.bound_state == 0 )
+	if (fun_control_sm == BOUND && scan_date.bound_state == 0)
 	{
-		bsl_add(&scan_date.src_mac_adr,sizeof(scan_date.src_mac_adr));	
+		bsl_add(&scan_date.src_mac_adr, sizeof(scan_date.src_mac_adr));
 	}
-	else if (fun_control_sm == UNBOUND && scan_date.bound_state == 1 )
+	else if (fun_control_sm == UNBOUND && scan_date.bound_state == 1)
 	{
-		//bsl_add(&scan_date.src_mac_adr,sizeof(scan_date.src_mac_adr));	
+		//bsl_add(&scan_date.src_mac_adr,sizeof(scan_date.src_mac_adr));
 	}
 #endif
-	
 }

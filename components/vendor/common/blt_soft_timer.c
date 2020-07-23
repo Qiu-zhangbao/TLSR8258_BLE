@@ -41,7 +41,7 @@
 _attribute_data_retention_	blt_soft_timer_t	blt_timer;
 
 
-//°´ÕÕ¶¨Ê±Ê±¼ä½«timerÅÅÐò£¬±ãÓÚprocessÊ± ÒÀ´Î´¥·¢timer
+//ï¿½ï¿½ï¿½Õ¶ï¿½Ê±Ê±ï¿½ä½«timerï¿½ï¿½ï¿½ò£¬±ï¿½ï¿½ï¿½processÊ± ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½timer
 int  blt_soft_timer_sort(void)
 {
 	if(blt_timer.currentNum < 1 || blt_timer.currentNum > MAX_TIMER_NUM){
@@ -49,7 +49,7 @@ int  blt_soft_timer_sort(void)
 		return 0;
 	}
 	else{
-		// Ã°ÅÝÅÅÐò  BubbleSort
+		// Ã°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  BubbleSort
 		int n = blt_timer.currentNum;
 		u8 temp[sizeof(blt_time_event_t)];
 
@@ -93,7 +93,7 @@ int blt_soft_timer_add(blt_timer_callback_t func, u32 interval_us)
 }
 
 
-//timer ±¾À´¾ÍÊÇÓÐÐòµÄ£¬É¾³ýµÄÊ±ºò£¬²ÉÓÃÍùÇ°¸²¸Ç£¬ËùÒÔ²»»áÆÆ»µË³Ðò£¬²»ÐèÒªÖØÐÂÅÅÐò
+//timer ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½É¾ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ò£¬²ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Ç£ï¿½ï¿½ï¿½ï¿½Ô²ï¿½ï¿½ï¿½ï¿½Æ»ï¿½Ë³ï¿½ò£¬²ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 int  blt_soft_timer_delete_by_index(u8 index)
 {
 	if(index >= blt_timer.currentNum){
@@ -119,7 +119,7 @@ int 	blt_soft_timer_delete(blt_timer_callback_t func)
 		if(blt_timer.timer[i].cb == func){
 			blt_soft_timer_delete_by_index(i);
 
-			if(i == 0){  //É¾³ýµÄÊÇ×î½üµÄtimer£¬ÐèÒª¸üÐÂÊ±¼ä
+			if(i == 0){  //É¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½timerï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
 
 				if( (u32)(blt_timer.timer[0].t - clock_time()) < 3000 *  CLOCK_16M_SYS_TIMER_CLK_1MS){
 					bls_pm_setAppWakeupLowPower(blt_timer.timer[0].t,  1);

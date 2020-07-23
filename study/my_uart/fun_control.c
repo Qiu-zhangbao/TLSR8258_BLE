@@ -18,6 +18,9 @@ static event_type_t fun_controlevent_handle(event_type_t event);
 int fun_control_process(void);
 fun_control_sm_t fun_control_sm = CONTROL;
 fun_control_sm_t fun_control_sm_last = STANDBY;
+
+fun_control_sm_t fun_control_sm_now = CONTROL;
+
 u8 key2_press_cnt=0;
 
 void fun_control_init(void)
@@ -42,6 +45,8 @@ void fun_control_in(void)
 	OLED_ShowString(30,0,"control",16);
 	OLED_ShowString(30,4,"state:",16);
 	OLED_ShowString(80,4,"off",16);
+	fun_control_sm_now = CONTROL;
+	bsl_adv_remote_state(fun_control_sm_now);
 
 }
 void fun_control_out(void)
@@ -102,7 +107,7 @@ void fun_oled_show_state(u8 on)
 
 static event_type_t fun_controlevent_handle(event_type_t event)
 {
-    if (fun_control_sm == CONTROL)
+    if (fun_control_sm_now == CONTROL)
     {
         switch(event)
         {
