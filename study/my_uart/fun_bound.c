@@ -46,6 +46,7 @@ void OLED_Show_Mac_List(u8 (*data)[6])
 }
 int fun_led_light_one(void)
 {
+    if(bound_cnt>0)
     bsl_adv_one_bound(&bound_list[0],1,0);
     return -1;
 }
@@ -53,7 +54,6 @@ int fun_bound_process(void)
 {
     static u8 num_cnt = 0;
     static u16 time = 0;
-    static u8 flag=0;
     time++;
     if (time>1800)//大于三分钟自动退出
     {
@@ -71,7 +71,7 @@ int fun_bound_process(void)
         num_cnt++;
         if (num_cnt > 10)
         {
-            OLED_ShowString(30, 0, "no device", 16);
+            OLED_ShowString(16, 0, "no new device", 16);
             num_cnt = 0;
         }
     }
@@ -91,9 +91,10 @@ void fun_bound_out(void)
 {
     OLED_Clear();
     device_led_setup(led_cfg[REMOTE_LED_KEY_PRESS]); //取消闪烁
+    blt_soft_timer_delete(fun_bound_process);
     memset(bound_list, 0, sizeof(bound_list));
     bound_cnt = 0;
-    blt_soft_timer_delete(fun_bound_process);
+
 }
 
 void fun_bound_add_mac_list(u8 (*data)[6], u8 len)
@@ -125,7 +126,6 @@ static event_type_t fun_boundevent_handle(event_type_t event)
             break;
         case EVENT_KEY1_LONG_PRESSED: //确认选择
             bsl_adv_one_bound(&bound_list[select_now],1,1);
-            fun_control_sm = CONTROL;
             break;
         case EVENT_KEY2_SHORT_PRESSED: //退出绑定
             fun_control_sm = CONTROL;
@@ -139,35 +139,5 @@ static event_type_t fun_boundevent_handle(event_type_t event)
     }
     return event;
 }
-
-
-
-// static event_type_t fun_boundevent_handle(event_type_t event)
-// {
-//     if (fun_control_sm == BOUND)
-//     {
-//         if (event == EVENT_KEY1_SHORT_PRESSED)
-//         {
-//             if(select_now>=bound_cnt)
-//                     select_now=0;
-//                 bsl_adv_one_bound(&bound_list[select_now],1,0);
-//                 select_now++;
-//         }
-//         else if(event == EVENT_KEY1_LONG_PRESSED)
-//         {
-//             bsl_adv_one_bound(&bound_list[select_now],1,1);
-//             device_led_setup(led_cfg[REMOTE_LED_KEY_PRESS]);
-//         }
-//         else if(event == EVENT_KEY2_SHORT_PRESSED)
-//         {
-//             fun_control_sm = CONTROL;
-//         }
-//         else if(event == EVENT_KEY1_AND_KEY2_PRESSED)
-//         {
-//             bsl_adv_led_all_bound(1);
-//         }
-//     }
-//     return event;
-// }
 
 #endif

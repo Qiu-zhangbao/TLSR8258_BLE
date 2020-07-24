@@ -60,16 +60,26 @@ extern u8  bound_mac_adr[6];
 #define OPCODE_LED_BOUND_ONE 0x84
 #define OPCODE_LED_UNBOUND_ONE 0x85
 
-
-
-
 void bsl_adv_init(void);
-void bsl_adv_led_onoff(u8 on);
 void bsl_adv_recive_data(u8 * data, u32 len);
+
+#if (DEVICE_TYPE == REMOTE)
+
+
+void bsl_adv_led_onoff(u8 on);
 void bsl_adv_led_all_bound(u8 on);
 void bsl_adv_add_callback(void (*add)(u8 (*mac)[6],u8 len));
+void bsl_adv_delate_callback(void (*delate)(u8 (*mac)[6],u8 len));
 void bsl_adv_one_bound(u8 (*mac)[6], u8 bound, u8 cmd);
 void bsl_adv_remote_state(fun_control_sm_t state );
+
+#elif (DEVICE_TYPE == LIGHT)
+
+
+
+
+
+#endif
 
 #endif
 

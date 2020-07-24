@@ -15,9 +15,11 @@ scan_date_t scan_date;
 u8 all_device_adr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
 int bsl_adv_process(void);
-void (*bsl_add)(u8 (*mac)[6], u8 len);
 
 #if (DEVICE_TYPE == REMOTE)
+
+void (*bsl_add)(u8 (*mac)[6], u8 len);
+void (*bsl_delate)(u8 (*mac)[6],u8 len);
 
 u8 device_adv_name[5] = {'R', 'E', 'M', 'O', 'T'};
 
@@ -42,7 +44,9 @@ void bsl_adv_init(void)
 	///////////////////change data start///////////////////
 	memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr)); //数据：目标地址
 	adv_date.op_code = 0x80;													 //开关灯命令
-	adv_date.op_code_sub = 0;													 //开机关灯
+	adv_date.op_code_sub = 0;			
+	adv_date.led_state = 0xff;
+	adv_date.bound_state = 0xff;
 
 	///////////////////change data end///////////////////
 
@@ -53,10 +57,17 @@ void bsl_adv_init(void)
 	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
 	blt_soft_timer_add(bsl_adv_process, 10 * 1000);			  //100ms
 }
+
+
 void bsl_adv_add_callback(void (*add)(u8 (*mac)[6],u8 len))
 {
 	bsl_add = add;
 }
+void bsl_adv_delate_callback(void (*delate)(u8 (*mac)[6],u8 len))
+{
+	bsl_delate = delate;
+}
+
 void bsl_adv_led_onoff(u8 on)
 {
 	if (on)
@@ -300,7 +311,7 @@ int bsl_adv_process(void)
 				memcpy(bound_mac_adr, &scan_date.src_mac_adr, sizeof(bound_mac_adr));
 				tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr));
 				bsl_change_bound_state_adv(1);
-				device_led_setup(led_cfg[LIGHT_LED_BOUND_ACK]); //开灯
+				device_led_setup(led_cfg[LIGHT_LED_BOUND_ACK]);
 			}
 		}
 		else if (scan_date.op_code == OPCODE_LED_UNBOUND_ONE)
@@ -310,7 +321,7 @@ int bsl_adv_process(void)
 				memcpy(bound_mac_adr, all_device_adr, sizeof(bound_mac_adr));
 				tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr));
 				bsl_change_bound_state_adv(0);
-				device_led_setup(led_cfg[LIGHT_LED_BOUND_ACK]); //开灯
+				device_led_setup(led_cfg[LIGHT_LED_UNBOUND_ACK]);
 			}
 		}
 	}
@@ -346,9 +357,9 @@ void bsl_adv_recive_data(u8 *data, u32 len)
 	{
 		bsl_add(&scan_date.src_mac_adr, sizeof(scan_date.src_mac_adr));
 	}
-	else if (fun_control_sm == UNBOUND && scan_date.bound_state == 1)
+	else if (fun_control_sm == UNBOUND && scan_date.bound_state == 1 &&  (memcmp(&scan_date.dst_mac_adr, device_mac_adr, 6) == 0))
 	{
-		//bsl_add(&scan_date.src_mac_adr,sizeof(scan_date.src_mac_adr));
+		bsl_delate(&scan_date.src_mac_adr, sizeof(scan_date.src_mac_adr));
 	}
 #endif
 }

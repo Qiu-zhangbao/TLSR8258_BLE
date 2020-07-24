@@ -44,7 +44,7 @@ void fun_control_in(void)
 {
 	OLED_ShowString(30,0,"control",16);
 	OLED_ShowString(30,4,"state:",16);
-	OLED_ShowString(80,4,"off",16);
+	fun_oled_show_state((key2_press_cnt-1)%2);
 	fun_control_sm_now = CONTROL;
 	bsl_adv_remote_state(fun_control_sm_now);
 

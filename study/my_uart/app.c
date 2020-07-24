@@ -58,7 +58,8 @@ led_cfg_t led_cfg[] = {
 		{0,	  	100 ,	  1,	  1,    },// LIGHT_LED_OFF,
 		{500,	  500 ,   1,	  2,    },// LIGHT_LED_SELECT,
 		{1000,	  1000 ,  3,	  3,	},// LIGHT_LED_RECOVER,	
-		{100,	  200 ,  3,	  4,	},// LIGHT_LED_RECOVER,		
+		{100,	  200 ,  4,	  4,	},// LIGHT_LED_RECOVER,	
+		{10,	  500 ,  4,	  5,	},// LIGHT_LED_RECOVER,			
 };
 
 #endif

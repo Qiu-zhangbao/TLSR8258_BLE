@@ -34,7 +34,7 @@ extern "C" {
 
 #define LIGHT 	 	2
 
-#define DEVICE_TYPE  	REMOTE
+#define DEVICE_TYPE  	LIGHT
 
 #define KIT  		1
 
@@ -87,6 +87,7 @@ enum{
 	LIGHT_LED_SELECT,
 	LIGHT_LED_RECOVER,
 	LIGHT_LED_BOUND_ACK,
+	LIGHT_LED_UNBOUND_ACK,
 };
 #endif
 
