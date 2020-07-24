@@ -42,7 +42,8 @@ extern "C" {
 
 #define DEVICE_BOARD  	KIT
 
-
+#define REMOTE_SOFTWARE_VISON  	1.0
+#define LIGHT_SOFTWARE_VISON  	1.0
 
 /////////////////// Clock  /////////////////////////////////
 #define CLOCK_SYS_CLOCK_HZ  	16000000
