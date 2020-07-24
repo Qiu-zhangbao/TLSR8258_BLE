@@ -191,8 +191,8 @@ void adv_scan(void)
 									ADV_FP_NONE); //过滤策略
 
 #elif(DEVICE_TYPE == LIGHT)
-	u8 status = bls_ll_setAdvParam( ADV_INTERVAL_50MS , //广播时间间隔最小值
-									ADV_INTERVAL_50MS , //广播时间间隔最大值
+	u8 status = bls_ll_setAdvParam( ADV_INTERVAL_100MS , //广播时间间隔最小值
+									ADV_INTERVAL_100MS , //广播时间间隔最大值
 									ADV_TYPE_NONCONNECTABLE_UNDIRECTED, //广播类型，不可连接非定向
 									OWN_ADDRESS_PUBLIC, //自身地址类型
 									0,  //定向地址类型

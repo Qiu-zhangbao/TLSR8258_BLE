@@ -188,8 +188,8 @@ void bsl_change_led_state_adv(u8 state)
 	else
 		adv_date.led_state = 0x00;
 	// ///////////////////change data end///////////////////
-	// memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
-	// bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
+	memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
+	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
 }
 
 void bsl_change_bound_state_adv(u8 state)
@@ -255,50 +255,49 @@ void bsl_adv_init(void)
 	adv_packet.date_len = sizeof(adv_packet.date) + 1;
 
 	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
-	blt_soft_timer_add(bsl_adv_process, 10 * 1000);			  //100ms
+	//blt_soft_timer_add(bsl_adv_process, 10 * 1000);			  //100ms
 }
 
-int bsl_adv_recover_self(void)
-{
-	memcpy(&adv_date.src_mac_adr, device_mac_adr, sizeof(adv_date.src_mac_adr)); //数据；源地址
+// int bsl_adv_recover_self(void)
+// {
+// 	memcpy(&adv_date.src_mac_adr, device_mac_adr, sizeof(adv_date.src_mac_adr)); //数据；源地址
 
-	if (memcmp(all_device_adr, bound_mac_adr, 6) == 0) //没有读取到绑定设备
-	{
-		memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr));
-	}
-	else
-	{
-		memcpy(&adv_date.dst_mac_adr, bound_mac_adr, sizeof(adv_date.dst_mac_adr));
-	}
-	adv_date.op_code = 0x00;
-	adv_date.op_code_sub = 0x00;
+// 	if (memcmp(all_device_adr, bound_mac_adr, 6) == 0) //没有读取到绑定设备
+// 	{
+// 		memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr));
+// 	}
+// 	else
+// 	{
+// 		memcpy(&adv_date.dst_mac_adr, bound_mac_adr, sizeof(adv_date.dst_mac_adr));
+// 	}
+// 	adv_date.op_code = 0x00;
+// 	adv_date.op_code_sub = 0x00;
 
-	memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
-	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
+// 	memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
+// 	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
 
-	return -1;
-}
-void bsl_adv_retrans(u8 *src,u8 *dst,u8 op,u8 op_sub)
-{
-	static u8 opcode_last=0;
-	static u8 opcode_sub_last=0;
+// 	return -1;
+// }
+// void bsl_adv_retrans(u8 *src,u8 *dst,u8 op,u8 op_sub)
+// {
+// 	static u8 opcode_last=0;
+// 	static u8 opcode_sub_last=0;
 
-	if(opcode_last!=op || opcode_sub_last!= op_sub)
-	{
-		memcpy(&adv_date.src_mac_adr, src, sizeof(adv_date.dst_mac_adr));
-		memcpy(&adv_date.dst_mac_adr, dst, sizeof(adv_date.dst_mac_adr));
-		adv_date.op_code = op;
-		adv_date.op_code_sub = op_sub;
-		///////////////////change data end///////////////////
-		memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
-		bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
-		blt_soft_timer_add(bsl_adv_recover_self, 500 * 1000);			  //500ms
+// 	if(opcode_last!=op || opcode_sub_last!= op_sub)
+// 	{
+// 		memcpy(&adv_date.src_mac_adr, src, sizeof(adv_date.dst_mac_adr));
+// 		memcpy(&adv_date.dst_mac_adr, dst, sizeof(adv_date.dst_mac_adr));
+// 		adv_date.op_code = op;
+// 		adv_date.op_code_sub = op_sub;
+// 		///////////////////change data end///////////////////
+// 		memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
+// 		bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
+// 		blt_soft_timer_add(bsl_adv_recover_self, 500 * 1000);			  //500ms
 
-		opcode_last=op;
-		opcode_sub_last=op_sub;
-	}
-
-}
+// 		opcode_last=op;
+// 		opcode_sub_last=op_sub;
+// 	}
+// }
 
 int bsl_adv_process(void)
 {
@@ -319,7 +318,7 @@ int bsl_adv_process(void)
 					bsl_change_led_state_adv(LED_OFF);
 				}
 			}
-			bsl_adv_retrans(&scan_date.src_mac_adr,all_device_adr,scan_date.op_code,scan_date.op_code_sub);
+			//bsl_adv_retrans(&scan_date.src_mac_adr,all_device_adr,scan_date.op_code,scan_date.op_code_sub);
 		}
 		else if (scan_date.op_code == OPCODE_LED_BOUND)
 		{
@@ -404,4 +403,7 @@ void bsl_adv_recive_data(u8 *data, u32 len)
 		bsl_delate(&scan_date.src_mac_adr, sizeof(scan_date.src_mac_adr));
 	}
 #endif
+
+	bsl_adv_process();
+
 }
