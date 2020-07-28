@@ -48,7 +48,7 @@ typedef struct{//16byte
 
 extern u8  device_mac_adr[6];
 extern u8  bound_mac_adr[6];
-
+extern u8 global_light_state;
 
 #define OPCODE_LED_ONOFF 0x80
 #define LED_ON 0x01

@@ -83,6 +83,9 @@ u8  device_mac_adr[6];
 //u8  bound_mac_adr[6]={0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 u8  bound_mac_adr[6]={0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 u8 reset_cnt=0;
+
+u8 global_light_state=0;
+
 int ui_process(void);
 
 //////////////////////////////////////////////////////////
@@ -146,12 +149,13 @@ int controller_event_callback (u32 h, u8 *p, int n)
 			{
 				//after controller is set to scan state, it will report all the adv packet it received by this event
 				event_adv_report_t *pa = (event_adv_report_t *)p;
-				if(pa->mac[5]==0xA4&&pa->mac[4]==0xC1&&pa->mac[3]==0x38)//筛选灯和遥控器
+				if(pa->data[10]==0x02 && pa->data[11]==0x10 && pa->data[12]==0x66)//筛选灯和遥控器
 				{
 					bsl_adv_recive_data(pa->data, pa->len);
-					// at_print_array(pa->data, pa->len);
-					// at_print("\r\n");
+				// at_print_array(pa->data, pa->len);
+				// at_print("\r\n");
 				}
+			
 			}
 			//--------hci le event: le data length change event ----------------------------------------
 			else if (subEvt_code == HCI_SUB_EVT_LE_DATA_LENGTH_CHANGE)
@@ -181,8 +185,8 @@ void adv_scan(void)
 	blc_ll_initScanning_module(device_mac_adr); 	//scan module: 		 mandatory for BLE master,
 
 #if (DEVICE_TYPE == REMOTE)
-	u8 status = bls_ll_setAdvParam( ADV_INTERVAL_3_125MS , //广播时间间隔最小值
-									ADV_INTERVAL_3_125MS , //广播时间间隔最大值
+	u8 status = bls_ll_setAdvParam( ADV_INTERVAL_10MS , //广播时间间隔最小值
+									ADV_INTERVAL_10MS , //广播时间间隔最大值
 									ADV_TYPE_NONCONNECTABLE_UNDIRECTED, //广播类型，不可连接非定向
 									OWN_ADDRESS_PUBLIC, //自身地址类型
 									0,  //定向地址类型
@@ -215,19 +219,25 @@ void adv_scan(void)
 
 	blc_ll_setScanParameter(SCAN_TYPE_PASSIVE, SCAN_INTERVAL_10MS, SCAN_INTERVAL_300MS, OWN_ADDRESS_PUBLIC, SCAN_FP_ALLOW_ADV_ANY);
 	
+	
+	#if(DEVICE_TYPE == LIGHT)
 	bls_ll_setAdvEnable(1); 
+	#endif
 
 	blc_ll_addScanningInAdvState();
 }
 void global_var_init(void)
 {
 	tinyFlash_Init(0x70000,0x4000); //初始化KV存储系统
-
 	u8 len=6;
 	// tinyFlash_Format();
 	//tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr)); 
 	tinyFlash_Read(STORAGE_BOUND_MAC, bound_mac_adr, &len); 
-	
+
+	#if (DEVICE_TYPE == LIGHT)
+	len = 1;
+	tinyFlash_Read(STORAGE_LIGHT_STATE, &global_light_state, &len); 
+	#endif
 }
 
 ///////////////////////////////////////////////////////上电五次清数据////////////////////////////////////////////////////////////

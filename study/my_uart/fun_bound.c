@@ -85,6 +85,7 @@ void fun_bound_in(void)
     blt_soft_timer_add(fun_led_light_one, 1000 * 1000);
     select_now=0;
     fun_control_sm_now = BOUND;
+    bls_ll_setAdvEnable(1); 
 }
 
 void fun_bound_out(void)
@@ -94,7 +95,7 @@ void fun_bound_out(void)
     blt_soft_timer_delete(fun_bound_process);
     memset(bound_list, 0, sizeof(bound_list));
     bound_cnt = 0;
-
+    bls_ll_setAdvEnable(0); 
 }
 
 void fun_bound_add_mac_list(u8 (*data)[6], u8 len)

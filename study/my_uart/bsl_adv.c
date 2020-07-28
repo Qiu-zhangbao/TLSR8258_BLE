@@ -79,6 +79,8 @@ void bsl_adv_led_onoff(u8 on)
 		///////////////////change data end///////////////////
 		memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
 		bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
+		bls_ll_setAdvEnable(1); 
+		bls_ll_setAdvDuration(10*1000,1);
 	}
 	else
 	{
@@ -89,6 +91,8 @@ void bsl_adv_led_onoff(u8 on)
 		///////////////////change data end///////////////////
 		memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
 		bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
+		bls_ll_setAdvEnable(1); 
+		bls_ll_setAdvDuration(10*1000,1);
 	}
 }
 void bsl_adv_remote_state( fun_control_sm_t state )
@@ -166,7 +170,6 @@ void bsl_adv_one_bound(u8 (*mac)[6], u8 bound, u8 cmd)
 	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
 }
 
-u8 fl = 1;
 int bsl_adv_process(void)
 {
 	// if (scan_date.bound_state == 0x01 &&fl ==1 )
@@ -236,7 +239,6 @@ void bsl_adv_init(void)
 	memcpy(&adv_date.src_mac_adr, device_mac_adr, sizeof(adv_date.src_mac_adr)); //数据；源地址
 
 	///////////////////change data start///////////////////
-	adv_date.led_state = 0x00;
 
 	if (memcmp(all_device_adr, bound_mac_adr, 6) == 0) //没有读取到绑定设备
 	{
@@ -248,6 +250,17 @@ void bsl_adv_init(void)
 		memcpy(&adv_date.dst_mac_adr, bound_mac_adr, sizeof(adv_date.dst_mac_adr));
 		adv_date.bound_state = 0x01;
 	}
+
+	if (global_light_state == 1)
+	{
+		device_led_setup(led_cfg[LIGHT_LED_ON]);
+		adv_date.led_state = 0x01;
+	}
+	else
+	{
+		adv_date.led_state = 0x00;
+	}
+	
 
 	///////////////////change data end///////////////////
 
@@ -309,13 +322,19 @@ int bsl_adv_process(void)
 			{
 				if (scan_date.op_code_sub == LED_ON)
 				{
+					global_light_state = 1;
 					device_led_setup(led_cfg[LIGHT_LED_ON]); //开灯
 					bsl_change_led_state_adv(LED_ON);		 //改变广播状态
+					
+					tinyFlash_Write(STORAGE_LIGHT_STATE, &global_light_state, sizeof(global_light_state));
 				}
 				else if (scan_date.op_code_sub == LED_OFF)
 				{
+					global_light_state = 0;
 					device_led_setup(led_cfg[LIGHT_LED_OFF]); //关灯
 					bsl_change_led_state_adv(LED_OFF);
+
+					tinyFlash_Write(STORAGE_LIGHT_STATE, &global_light_state, sizeof(global_light_state));
 				}
 			}
 			//bsl_adv_retrans(&scan_date.src_mac_adr,all_device_adr,scan_date.op_code,scan_date.op_code_sub);
@@ -374,36 +393,34 @@ int bsl_adv_process(void)
 
 void bsl_adv_recive_data(u8 *data, u32 len)
 {
-	scan_date.src_mac_adr[0] = data[15];
-	scan_date.src_mac_adr[1] = data[16];
-	scan_date.src_mac_adr[2] = data[17];
-	scan_date.src_mac_adr[3] = data[18];
-	scan_date.src_mac_adr[4] = data[19];
-	scan_date.src_mac_adr[5] = data[20];
+		scan_date.src_mac_adr[0] = data[15];
+		scan_date.src_mac_adr[1] = data[16];
+		scan_date.src_mac_adr[2] = data[17];
+		scan_date.src_mac_adr[3] = data[18];
+		scan_date.src_mac_adr[4] = data[19];
+		scan_date.src_mac_adr[5] = data[20];
 
-	scan_date.dst_mac_adr[0] = data[21];
-	scan_date.dst_mac_adr[1] = data[22];
-	scan_date.dst_mac_adr[2] = data[23];
-	scan_date.dst_mac_adr[3] = data[24];
-	scan_date.dst_mac_adr[4] = data[25];
-	scan_date.dst_mac_adr[5] = data[26];
+		scan_date.dst_mac_adr[0] = data[21];
+		scan_date.dst_mac_adr[1] = data[22];
+		scan_date.dst_mac_adr[2] = data[23];
+		scan_date.dst_mac_adr[3] = data[24];
+		scan_date.dst_mac_adr[4] = data[25];
+		scan_date.dst_mac_adr[5] = data[26];
 
-	scan_date.op_code = data[27];
-	scan_date.op_code_sub = data[28];
-	scan_date.led_state = data[29];
-	scan_date.bound_state = data[30];
+		scan_date.op_code = data[27];
+		scan_date.op_code_sub = data[28];
+		scan_date.led_state = data[29];
+		scan_date.bound_state = data[30];
 
-#if (DEVICE_TYPE == REMOTE)
-	if (fun_control_sm == BOUND && scan_date.bound_state == 0)
-	{
-		bsl_add(&scan_date.src_mac_adr, sizeof(scan_date.src_mac_adr));
-	}
-	else if (fun_control_sm == UNBOUND && scan_date.bound_state == 1 &&  (memcmp(&scan_date.dst_mac_adr, device_mac_adr, 6) == 0))
-	{
-		bsl_delate(&scan_date.src_mac_adr, sizeof(scan_date.src_mac_adr));
-	}
-#endif
-
-	bsl_adv_process();
-
+	#if (DEVICE_TYPE == REMOTE)
+		if (fun_control_sm == BOUND && scan_date.bound_state == 0 &&(memcmp(&scan_date.dst_mac_adr, all_device_adr, 6) == 0) )
+		{
+			bsl_add(&scan_date.src_mac_adr, sizeof(scan_date.src_mac_adr));
+		}
+		else if (fun_control_sm == UNBOUND && scan_date.bound_state == 1 &&  (memcmp(&scan_date.dst_mac_adr, device_mac_adr, 6) == 0))
+		{
+			bsl_delate(&scan_date.src_mac_adr, sizeof(scan_date.src_mac_adr));
+		}
+	#endif
+		bsl_adv_process();
 }

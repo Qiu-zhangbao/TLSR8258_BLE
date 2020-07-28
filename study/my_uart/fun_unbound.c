@@ -100,6 +100,7 @@ void fun_unbound_in(void)
     blt_soft_timer_add(fun_led_unlight_one, 1000 * 1000); //100ms
     fun_control_sm_now = UNBOUND;
     select_now = 0;
+    bls_ll_setAdvEnable(1); 
 }
 void fun_unbound_out(void)
 {
@@ -108,6 +109,7 @@ void fun_unbound_out(void)
     blt_soft_timer_delete(fun_unbound_process);
     memset(unbound_list, 0, sizeof(unbound_list));
     unbound_cnt=0;//设备数清0
+    bls_ll_setAdvEnable(0); 
 }
 
 static event_type_t fun_unboundevent_handle(event_type_t event)

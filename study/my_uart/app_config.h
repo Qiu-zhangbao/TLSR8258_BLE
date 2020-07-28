@@ -42,8 +42,8 @@ extern "C" {
 
 #define DEVICE_BOARD  	KIT
 
-#define REMOTE_SOFTWARE_VISON  	1.0
-#define LIGHT_SOFTWARE_VISON  	1.0
+#define REMOTE_SOFTWARE_VISON  	1.1
+#define LIGHT_SOFTWARE_VISON  	1.1
 
 /////////////////// Clock  /////////////////////////////////
 #define CLOCK_SYS_CLOCK_HZ  	16000000
@@ -96,6 +96,7 @@ enum
 {
     STORAGE_BOUND_MAC = 1,
 	STORAGE_RESET_CNT,
+	STORAGE_LIGHT_STATE,
 };
 
 //////////////////// DMA ///////////////////////////

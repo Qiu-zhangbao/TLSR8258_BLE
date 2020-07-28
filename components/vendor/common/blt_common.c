@@ -41,15 +41,9 @@ void blc_initMacAddress(int flash_addr, u8 *mac_public)
 	else
 	{ //no public address on flash
 
-		u8 value_rand[5];
-		generateRandomNum(5, value_rand);
-		mac_public[0] = value_rand[0];
-		mac_public[1] = value_rand[1];
-		mac_public[2] = value_rand[2];
-
-		mac_public[3] = 0x38;
-		mac_public[4] = 0xC1;
-		mac_public[5] = 0xA4;
+		u8 value_rand[6];
+		generateRandomNum(6, value_rand);
+		memcpy(mac_public, value_rand, 6);
 
 		flash_write_page(flash_addr, 6, mac_public);
 	}
