@@ -82,10 +82,12 @@ void fun_bound_in(void)
 {
     device_led_setup(led_cfg[REMOTE_LED_BOUND_MODE]); //绑定模式开始闪烁
     blt_soft_timer_add(fun_bound_process, 100 * 1000); //100ms
-    blt_soft_timer_add(fun_led_light_one, 1000 * 1000);
+   // blt_soft_timer_add(fun_led_light_one, 1000 * 1000);
     select_now=0;
     fun_control_sm_now = BOUND;
+    bsl_adv_remote_state(fun_control_sm_now);//查询绑定
     bls_ll_setAdvEnable(1); 
+    
 }
 
 void fun_bound_out(void)

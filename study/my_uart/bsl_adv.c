@@ -80,7 +80,7 @@ void bsl_adv_led_onoff(u8 on)
 		memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
 		bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
 		bls_ll_setAdvEnable(1); 
-		bls_ll_setAdvDuration(10*1000,1);
+		bls_ll_setAdvDuration(100*1000,1);
 	}
 	else
 	{
@@ -92,7 +92,7 @@ void bsl_adv_led_onoff(u8 on)
 		memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
 		bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
 		bls_ll_setAdvEnable(1); 
-		bls_ll_setAdvDuration(10*1000,1);
+		bls_ll_setAdvDuration(100*1000,1);
 	}
 }
 void bsl_adv_remote_state( fun_control_sm_t state )
@@ -109,11 +109,22 @@ void bsl_adv_remote_state( fun_control_sm_t state )
 	}
 	else if (state == BOUND)
 	{
-		/* code */
+		///////////////////change data start///////////////////
+		memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr)); //数据：目标地址
+		adv_date.op_code = OPCODE_LED_BOUND_INQUIRE;													 //开关灯命令
+															 //开灯
+		///////////////////change data end///////////////////
+		memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
+		bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
 	}
 	else if (state == UNBOUND)
 	{
-		/* code */
+		///////////////////change data start///////////////////
+		memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr)); //数据：目标地址
+		adv_date.op_code = OPCODE_LED_UNBOUND_INQUIRE;													 //开关灯命令
+		///////////////////change data end///////////////////
+		memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
+		bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
 	}
 	
 
@@ -181,6 +192,7 @@ int bsl_adv_process(void)
 	return 0;
 }
 
+
 #elif (DEVICE_TYPE == LIGHT)
 
 void bsl_change_led_state_adv(u8 state)
@@ -200,7 +212,7 @@ void bsl_change_bound_state_adv(u8 state)
 	///////////////////change data start///////////////////
 	if (state)
 	{
-		memcpy(&adv_date.dst_mac_adr, bound_mac_adr, sizeof(adv_date.dst_mac_adr));
+		memcpy(&adv_date.dst_mac_adr, &scan_date.src_mac_adr, sizeof(adv_date.dst_mac_adr));
 		adv_date.bound_state = 0x01;
 	}
 	else
@@ -213,6 +225,9 @@ void bsl_change_bound_state_adv(u8 state)
 	memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
 	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
 }
+
+
+
 
 u8 device_adv_name[5] = {'L', 'I', 'G', 'H', 'T'};
 
@@ -312,13 +327,24 @@ void bsl_adv_init(void)
 // 	}
 // }
 
+
+u8 bsl_is_bound_mac( u8 *mac_src)
+{
+	for (u8 i = 0; i < 10; i++)
+    {
+        if ((memcmp(&bound_remote_list[i][0], mac_src, 6) == 0))
+            return i;
+	}
+	return 0xff;
+}
+u8 cnt=0;
 int bsl_adv_process(void)
 {
 	if (memcmp(&scan_date.dst_mac_adr, all_device_adr, 6) == 0) //发给所有设备的消息：目标地址都是0xff
 	{
 		if (scan_date.op_code == OPCODE_LED_ONOFF)
 		{
-			if (memcmp(&scan_date.src_mac_adr, bound_mac_adr, 6) == 0) //被该遥控器绑定：消息源地址等于绑定地址
+			if (bsl_is_bound_mac(&scan_date.src_mac_adr) != 0xff)//被该遥控器绑定
 			{
 				if (scan_date.op_code_sub == LED_ON)
 				{
@@ -326,7 +352,7 @@ int bsl_adv_process(void)
 					device_led_setup(led_cfg[LIGHT_LED_ON]); //开灯
 					bsl_change_led_state_adv(LED_ON);		 //改变广播状态
 					
-					tinyFlash_Write(STORAGE_LIGHT_STATE, &global_light_state, sizeof(global_light_state));
+					//tinyFlash_Write(STORAGE_LIGHT_STATE, &global_light_state, sizeof(global_light_state));
 				}
 				else if (scan_date.op_code_sub == LED_OFF)
 				{
@@ -334,30 +360,67 @@ int bsl_adv_process(void)
 					device_led_setup(led_cfg[LIGHT_LED_OFF]); //关灯
 					bsl_change_led_state_adv(LED_OFF);
 
-					tinyFlash_Write(STORAGE_LIGHT_STATE, &global_light_state, sizeof(global_light_state));
+					//tinyFlash_Write(STORAGE_LIGHT_STATE, &global_light_state, sizeof(global_light_state));
 				}
 			}
 			//bsl_adv_retrans(&scan_date.src_mac_adr,all_device_adr,scan_date.op_code,scan_date.op_code_sub);
 		}
 		else if (scan_date.op_code == OPCODE_LED_BOUND)
 		{
-			if (adv_date.bound_state == 0x00) //未绑定
+			if (bsl_is_bound_mac(&scan_date.src_mac_adr) == 0xff)//没有被该设备绑定
 			{
-				memcpy(bound_mac_adr, &scan_date.src_mac_adr, sizeof(bound_mac_adr));
-				tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr));
-				bsl_change_bound_state_adv(1);
+				// memcpy(bound_mac_adr, &scan_date.src_mac_adr, sizeof(bound_mac_adr));
+				// tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr));
+				// bsl_change_bound_state_adv(1);
+
+				for (u8 i = 0; i < 10; i++)
+				{
+					if (bound_remote_list[i][0] == 0)
+					{
+						memcpy(&bound_remote_list[i][0], &scan_date.src_mac_adr, 6);
+						return;
+					}
+				}
 			}
 		}
 		else if (scan_date.op_code == OPCODE_LED_UNBOUND)
-		{
-			if (adv_date.bound_state == 0x01 && (memcmp(&scan_date.src_mac_adr, bound_mac_adr, 6) == 0)) //已被该遥控器绑定
+		{			
+			cnt=bsl_is_bound_mac(&scan_date.src_mac_adr);
+			if ( cnt!= 0xff)//被该设备绑定
 			{
-				memcpy(bound_mac_adr, all_device_adr, sizeof(bound_mac_adr));
-				tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr));
-				bsl_change_bound_state_adv(0);
+				// memcpy(bound_mac_adr, &scan_date.src_mac_adr, sizeof(bound_mac_adr));
+				// tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr));
+				// bsl_change_bound_state_adv(1);
+				for (u8 i = 0; i < 6; i++)
+				{
+					bound_remote_list[cnt][i] = 0x00;
+				}
 			}
 		}
+		else if (scan_date.op_code == OPCODE_LED_BOUND_INQUIRE)
+		{
+			if (bsl_is_bound_mac(&scan_date.src_mac_adr) == 0xff)
+			{
+				bsl_change_bound_state_adv(0);
+				device_led_setup(led_cfg[LIGHT_LED_OFF]); //开灯
+			}
+			
+		}
+		else if (scan_date.op_code == OPCODE_LED_UNBOUND_INQUIRE)
+		{
+			//两个遥控，还要改
+			if (bsl_is_bound_mac(&scan_date.src_mac_adr) != 0xff)//已绑定
+			{
+				bsl_change_bound_state_adv(1);
+				device_led_setup(led_cfg[LIGHT_LED_ON]); //开灯
+			}
+			
+		}
 	}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
 	else if (memcmp(&scan_date.dst_mac_adr, device_mac_adr, 6) == 0)//发给单个设备的消息：目标地址都是自身地址
 	{
 		if (scan_date.op_code == OPCODE_LED_BOUND_TEXT_ONE)

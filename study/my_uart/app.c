@@ -84,6 +84,8 @@ u8  device_mac_adr[6];
 u8  bound_mac_adr[6]={0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 u8 reset_cnt=0;
 
+u8 bound_remote_list[10][6]={0};
+
 u8 global_light_state=0;
 
 int ui_process(void);

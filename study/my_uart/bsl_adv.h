@@ -49,6 +49,7 @@ typedef struct{//16byte
 extern u8  device_mac_adr[6];
 extern u8  bound_mac_adr[6];
 extern u8 global_light_state;
+extern u8 bound_remote_list[10][6];
 
 #define OPCODE_LED_ONOFF 0x80
 #define LED_ON 0x01
@@ -59,6 +60,12 @@ extern u8 global_light_state;
 #define OPCODE_LED_BOUND_TEXT_ONE 0x83
 #define OPCODE_LED_BOUND_ONE 0x84
 #define OPCODE_LED_UNBOUND_ONE 0x85
+
+
+#define OPCODE_LED_BOUND_INQUIRE 0x86
+#define OPCODE_LED_UNBOUND_INQUIRE 0x87
+
+
 
 void bsl_adv_init(void);
 void bsl_adv_recive_data(u8 * data, u32 len);
