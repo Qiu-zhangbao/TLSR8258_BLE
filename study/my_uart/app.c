@@ -228,17 +228,19 @@ void adv_scan(void)
 
 	blc_ll_addScanningInAdvState();
 }
+
+
 void global_var_init(void)
 {
 	tinyFlash_Init(0x70000,0x4000); //初始化KV存储系统
-	u8 len=6;
+	u8 len=60;
 	// tinyFlash_Format();
 	//tinyFlash_Write(STORAGE_BOUND_MAC, bound_mac_adr, sizeof(bound_mac_adr)); 
-	tinyFlash_Read(STORAGE_BOUND_MAC, bound_mac_adr, &len); 
+	tinyFlash_Read(STORAGE_BOUND_MAC, bound_remote_list, &len); 
 
 	#if (DEVICE_TYPE == LIGHT)
-	len = 1;
-	tinyFlash_Read(STORAGE_LIGHT_STATE, &global_light_state, &len); 
+	// len = 1;
+	// tinyFlash_Read(STORAGE_LIGHT_STATE, &global_light_state, &len); 
 	#endif
 }
 
@@ -256,12 +258,19 @@ void factory_reset_cnt_check (void)
 	tinyFlash_Read(STORAGE_RESET_CNT, &reset_cnt, &len); 
 	if (reset_cnt>3)//第5次进来
 	{
-		len=6;
 		reset_cnt=0;
-		u8  ff_mac_adr[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 		tinyFlash_Write(STORAGE_RESET_CNT, &reset_cnt, 1); //复位标记
-		memcpy(&bound_mac_adr, &ff_mac_adr, sizeof(bound_mac_adr));
-		tinyFlash_Write(STORAGE_BOUND_MAC, (unsigned char *)bound_mac_adr, len); //清除地址
+
+		for (u8 i = 0; i < 10; i++)
+		{
+			for (u8 j = 0; j < 6; j++)
+			{
+				bound_remote_list[i][j]=0;
+			}
+		}
+		
+		tinyFlash_Write(STORAGE_BOUND_MAC, (unsigned char *)bound_remote_list, sizeof(bound_remote_list)); //清除地址
+
 		device_led_setup(led_cfg[LIGHT_LED_RECOVER]);//闪烁
 	}
 	else
@@ -270,7 +279,6 @@ void factory_reset_cnt_check (void)
 		tinyFlash_Write(STORAGE_RESET_CNT, &reset_cnt, 1);
 		blt_soft_timer_add(reset_cnt_clera,3000*1000);//100ms
 	}
-	
 }
 
 //////////////////////////////////////////////////////初始化/////////////////////////////////////////////////////////

@@ -34,7 +34,7 @@ extern "C" {
 
 #define LIGHT 	 	2
 
-#define DEVICE_TYPE  	REMOTE
+#define DEVICE_TYPE  	LIGHT
 
 #define KIT  		1
 
@@ -42,8 +42,38 @@ extern "C" {
 
 #define DEVICE_BOARD  	KIT
 
-#define REMOTE_SOFTWARE_VISON  	1.1
-#define LIGHT_SOFTWARE_VISON  	1.1
+#define REMOTE_SOFTWARE_VISON  	1.2
+/*
+遥控器1.2稳定版
+
+*/
+#define LIGHT_SOFTWARE_VISON  	1.2
+
+/*
+灯1.2存在写flash效率低问题
+*/
+
+
+
+
+
+/*
+变更记录
+
+20200729
+版本1.2
+
+
+1、灯被多个遥控器绑定
+2、能交叉控制，灯以收到遥控器命令的先后顺序受控
+3、使用随机mac地址，设备过滤用广播的形式
+4、遥控器不用一直广播命令，发完命令自动关闭广播和扫描
+5、灯的开关状态以上次掉电状态为准（由于flash问题代码被注释）
+6、用事件触发任务，增加响应速度
+
+
+
+*/
 
 /////////////////// Clock  /////////////////////////////////
 #define CLOCK_SYS_CLOCK_HZ  	16000000

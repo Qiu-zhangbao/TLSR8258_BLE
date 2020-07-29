@@ -97,7 +97,7 @@ void fun_unbound_in(void)
     // OLED_ShowString(30, 0, "unbound", 16);
     device_led_setup(led_cfg[REMOTE_LED_UNBOUND_MODE]);
     blt_soft_timer_add(fun_unbound_process, 100 * 1000); //100ms
-   // blt_soft_timer_add(fun_led_unlight_one, 1000 * 1000); //100ms
+    blt_soft_timer_add(fun_led_unlight_one, 2000 * 1000); //100ms
     fun_control_sm_now = UNBOUND;
     bsl_adv_remote_state(fun_control_sm_now);//查询未绑定
     select_now = 0;

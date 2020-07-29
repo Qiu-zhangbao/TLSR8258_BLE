@@ -63,7 +63,7 @@ extern u8 bound_remote_list[10][6];
 
 
 #define OPCODE_LED_BOUND_INQUIRE 0x86
-#define OPCODE_LED_UNBOUND_INQUIRE 0x87
+
 
 
 
