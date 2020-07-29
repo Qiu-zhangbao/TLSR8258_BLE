@@ -66,7 +66,6 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 	blc_app_loadCustomizedParameters();  //load customized freq_offset cap value
 
 	user_init_normal();
-	at_print("    \r\npower_on\r\n");
 
 	while (1) 
 	{

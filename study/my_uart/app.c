@@ -239,8 +239,8 @@ void global_var_init(void)
 	tinyFlash_Read(STORAGE_BOUND_MAC, bound_remote_list, &len); 
 
 	#if (DEVICE_TYPE == LIGHT)
-	// len = 1;
-	// tinyFlash_Read(STORAGE_LIGHT_STATE, &global_light_state, &len); 
+	len = 1;
+	tinyFlash_Read(STORAGE_LIGHT_STATE, &global_light_state, &len); 
 	#endif
 }
 
@@ -310,9 +310,9 @@ void user_init_normal(void)
 	#if (DEVICE_TYPE == LIGHT)
 	factory_reset_cnt_check();
 	#endif
-
 	bsl_adv_init();
 
+	at_print("\r\ninit OK\r\n");
 }
 
 int ui_process(void)

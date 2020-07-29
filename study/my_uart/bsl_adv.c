@@ -280,19 +280,29 @@ int bsl_adv_process(void)
 			{
 				if (scan_date.op_code_sub == LED_ON)
 				{
-					global_light_state = 1;
-					device_led_setup(led_cfg[LIGHT_LED_ON]); //开灯
-					bsl_change_led_state_adv(LED_ON);		 //改变广播状态
-					
-					//tinyFlash_Write(STORAGE_LIGHT_STATE, &global_light_state, sizeof(global_light_state));
+					if (adv_date.led_state == 0x00)//当前关灯
+					{
+						global_light_state = 1;
+						device_led_setup(led_cfg[LIGHT_LED_ON]); //开灯
+						bsl_change_led_state_adv(LED_ON);		 //改变广播状态
+						at_print("led on \r\n");
+						at_print("s\r\n");
+						tinyFlash_Write(STORAGE_LIGHT_STATE, &global_light_state, sizeof(global_light_state));
+						at_print("e\r\n");
+					}
 				}
 				else if (scan_date.op_code_sub == LED_OFF)
 				{
-					global_light_state = 0;
-					device_led_setup(led_cfg[LIGHT_LED_OFF]); //关灯
-					bsl_change_led_state_adv(LED_OFF);
-
-					//tinyFlash_Write(STORAGE_LIGHT_STATE, &global_light_state, sizeof(global_light_state));
+					if (adv_date.led_state == 0x01)//当前关灯
+					{
+						global_light_state = 0;
+						device_led_setup(led_cfg[LIGHT_LED_OFF]); //关灯
+						bsl_change_led_state_adv(LED_OFF);
+						at_print("led off \r\n");
+						at_print("start \r\n");
+						tinyFlash_Write(STORAGE_LIGHT_STATE, &global_light_state, sizeof(global_light_state));
+						at_print("end \r\n");
+					}
 				}
 			}
 			//bsl_adv_retrans(&scan_date.src_mac_adr,all_device_adr,scan_date.op_code,scan_date.op_code_sub);
@@ -307,6 +317,7 @@ int bsl_adv_process(void)
 					{
 						memcpy(&bound_remote_list[i][0], &scan_date.src_mac_adr, 6);
 						tinyFlash_Write(STORAGE_BOUND_MAC, (unsigned char *)bound_remote_list, sizeof(bound_remote_list));
+						at_print("bound all \r\n");
 						return;
 					}
 				}
@@ -323,6 +334,7 @@ int bsl_adv_process(void)
 					bound_remote_list[cnt][i] = 0x00;
 				}
 				tinyFlash_Write(STORAGE_BOUND_MAC, (unsigned char *)bound_remote_list, sizeof(bound_remote_list));
+				at_print("unbound all \r\n");
 			}
 		}
 		else if (scan_date.op_code == OPCODE_LED_BOUND_INQUIRE)//查询绑定状态
@@ -331,15 +343,23 @@ int bsl_adv_process(void)
 			if( clock_time_exceed(bsl_adv_delay, 10*1000))
 			{
 				bsl_adv_delay = clock_time();
-				if (bsl_is_bound_mac(&scan_date.src_mac_adr) == 0xff)
+				if (bsl_is_bound_mac(&scan_date.src_mac_adr) == 0xff)//没绑定
 				{
-					bsl_iequire_bound_state_ack(&scan_date.src_mac_adr,0x00);
+					//if (adv_date.bound_state == 1 || (memcmp(&scan_date.src_mac_adr, &adv_date.dst_mac_adr, 6) != 0))
+					{
+						at_print("iequire bound state :1 \r\n");
+						bsl_iequire_bound_state_ack(&scan_date.src_mac_adr,0x00);
+					}
 				}
-				else
+				else//绑定了
 				{
-					bsl_iequire_bound_state_ack(&scan_date.src_mac_adr,0x01);
+					//if (adv_date.bound_state == 0 || (memcmp(&scan_date.src_mac_adr, &adv_date.dst_mac_adr, 6) != 0))
+					{
+						at_print("iequire bound state :0 \r\n");
+						bsl_iequire_bound_state_ack(&scan_date.src_mac_adr,0x01);
+					}
+					
 				}
-				
 			}
 		}
 		
@@ -364,6 +384,7 @@ int bsl_adv_process(void)
 					{
 						memcpy(&bound_remote_list[i][0], &scan_date.src_mac_adr, 6);
 						tinyFlash_Write(STORAGE_BOUND_MAC, (unsigned char *)bound_remote_list, sizeof(bound_remote_list));
+						at_print("bound one success \r\n");
 						device_led_setup(led_cfg[LIGHT_LED_BOUND_ACK]);
 						return;
 					}
@@ -382,6 +403,7 @@ int bsl_adv_process(void)
 					bound_remote_list[cnt][i] = 0x00;
 				}
 				tinyFlash_Write(STORAGE_BOUND_MAC, (unsigned char *)bound_remote_list, sizeof(bound_remote_list));
+				at_print("unbound one success \r\n");
 				device_led_setup(led_cfg[LIGHT_LED_UNBOUND_ACK]);
 			}
 		}
