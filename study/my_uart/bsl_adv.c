@@ -14,9 +14,11 @@ scan_date_t scan_date;
 
 u8 all_device_adr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
-void bsl_adv_process(void);
+
 
 #if (DEVICE_TYPE == REMOTE)
+
+int bsl_adv_process(void);
 
 void (*bsl_add)(u8 (*mac)[6], u8 len);
 void (*bsl_delate)(u8 (*mac)[6],u8 len);

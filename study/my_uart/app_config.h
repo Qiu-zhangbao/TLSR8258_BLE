@@ -40,7 +40,7 @@ extern "C" {
 
 #define DONG 	 	2
 
-#define DEVICE_BOARD  	DONG
+#define DEVICE_BOARD  	KIT
 
 #define REMOTE_SOFTWARE_VISON  	1.2
 /*
