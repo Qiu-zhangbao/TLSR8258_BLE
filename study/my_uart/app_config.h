@@ -40,14 +40,14 @@ extern "C" {
 
 #define DONG 	 	2
 
-#define DEVICE_BOARD  	KIT
+#define DEVICE_BOARD  	DONG
 
 #define REMOTE_SOFTWARE_VISON  	1.2
 /*
 遥控器1.2稳定版
 
 */
-#define LIGHT_SOFTWARE_VISON  	1.2
+#define LIGHT_SOFTWARE_VISON  	1.3
 
 /*
 灯1.2存在写flash效率低问题
@@ -59,6 +59,13 @@ extern "C" {
 
 /*
 变更记录
+
+20200730
+版本1.3
+
+1、增加灯log打印
+2、灯在无操作5s后保存数据
+
 
 20200729
 版本1.2

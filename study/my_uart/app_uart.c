@@ -59,24 +59,28 @@ void app_uart_init(void)
 
 void at_print(char * str)
 {
-	while(*str)
-	{
-		trans_buff.data[trans_buff.dma_len] = *str++;
-		trans_buff.dma_len += 1;
-		if(trans_buff.dma_len == 12)
+	#if (DEVICE_BOARD == KIT)
+		while(*str)
+		{
+			trans_buff.data[trans_buff.dma_len] = *str++;
+			trans_buff.dma_len += 1;
+			if(trans_buff.dma_len == 12)
+			{
+				uart_dma_send((unsigned char*)&trans_buff);
+				trans_buff.dma_len = 0;
+				WaitMs(2);
+			}
+		}
+
+		if(trans_buff.dma_len)
 		{
 			uart_dma_send((unsigned char*)&trans_buff);
 			trans_buff.dma_len = 0;
 			WaitMs(2);
 		}
-	}
-
-	if(trans_buff.dma_len)
-	{
-		uart_dma_send((unsigned char*)&trans_buff);
-		trans_buff.dma_len = 0;
-		WaitMs(2);
-	}
+	
+	#endif
+	
 }
 void at_print_array(char * data, u32 len)
 {
