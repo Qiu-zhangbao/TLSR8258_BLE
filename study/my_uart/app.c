@@ -256,7 +256,7 @@ void factory_reset_cnt_check (void)
 {
 	u8 len=1;
 	tinyFlash_Read(STORAGE_RESET_CNT, &reset_cnt, &len); 
-	if (reset_cnt>3)//第5次进来
+	if (reset_cnt>5)//第5次进来
 	{
 		reset_cnt=0;
 		tinyFlash_Write(STORAGE_RESET_CNT, &reset_cnt, 1); //复位标记
@@ -277,7 +277,7 @@ void factory_reset_cnt_check (void)
 	{
 		reset_cnt++;
 		tinyFlash_Write(STORAGE_RESET_CNT, &reset_cnt, 1);
-		blt_soft_timer_add(reset_cnt_clera,3000*1000);//100ms
+		blt_soft_timer_add(reset_cnt_clera,8000*1000);//100ms
 	}
 }
 
@@ -297,8 +297,8 @@ void user_init_normal(void)
 	Init_event_queue();//事件队列
 	
 	#if (DEVICE_TYPE == REMOTE)
-	OLED_Init();
-	OLED_Clear();
+	// OLED_Init();
+	// OLED_Clear();
 	key_init();
 	fun_control_init();
 	#endif
@@ -306,7 +306,7 @@ void user_init_normal(void)
 	#if (BLT_APP_LED_ENABLE)
 	device_led_init(GPIO_LED, LED_ON_LEVAL);  //LED initialization
 	#endif
-
+	//device_led_setup(led_cfg[LIGHT_LED_ON]); //开灯
 	#if (DEVICE_TYPE == LIGHT)
 	factory_reset_cnt_check();
 	#endif

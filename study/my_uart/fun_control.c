@@ -20,7 +20,7 @@ fun_control_sm_t fun_control_sm = CONTROL;
 fun_control_sm_t fun_control_sm_last = STANDBY;
 
 fun_control_sm_t fun_control_sm_now = CONTROL;
-
+u8 key2_press_cnt=0;
 
 void fun_control_init(void)
 {
@@ -43,7 +43,7 @@ void fun_control_in(void)
 {
 	OLED_ShowString(30,0,"control",16);
 	OLED_ShowString(30,4,"state:",16);
-	fun_oled_show_state(0);
+	fun_oled_show_state((key2_press_cnt-1)%2);
 	fun_control_sm_now = CONTROL;
 	bsl_adv_remote_state(fun_control_sm_now);
 
@@ -110,15 +110,16 @@ static event_type_t fun_controlevent_handle(event_type_t event)
     {
         switch(event)
         {
-			case EVENT_KEY2_SHORT_PRESSED://开关键
+			case EVENT_KEY1_SHORT_PRESSED://开关键
                 device_led_setup(led_cfg[REMOTE_LED_KEY_PRESS]);
-                bsl_adv_led_onoff(1);
-				fun_oled_show_state(1);
+                key2_press_cnt++;
+                bsl_adv_led_onoff((key2_press_cnt-1)%2);
+				//fun_oled_show_state((key2_press_cnt-1)%2);
                 break;
-            case EVENT_KEY1_SHORT_PRESSED://开关键
-                device_led_setup(led_cfg[REMOTE_LED_KEY_PRESS]);
-                bsl_adv_led_onoff(0);
-				fun_oled_show_state(0);
+            case EVENT_KEY2_SHORT_PRESSED://开关键
+                // device_led_setup(led_cfg[REMOTE_LED_KEY_PRESS]);
+                // bsl_adv_led_onoff(0);
+				// fun_oled_show_state(0);
                 break;
             case EVENT_KEY1_LONG_PRESSED://进入绑定状态
                 fun_control_sm = BOUND;

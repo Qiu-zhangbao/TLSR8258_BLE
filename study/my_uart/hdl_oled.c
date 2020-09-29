@@ -25,11 +25,11 @@ void OLED_WR_Byte(unsigned dat, unsigned cmd)
 {
 	if (cmd)
 	{
-		Write_IIC_Data(dat);
+		//Write_IIC_Data(dat);
 	}
 	else
 	{
-		Write_IIC_Command(dat);
+		//Write_IIC_Command(dat);
 	}
 }
 

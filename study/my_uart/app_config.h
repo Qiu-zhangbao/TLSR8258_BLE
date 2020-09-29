@@ -34,7 +34,7 @@ extern "C" {
 
 #define LIGHT 	 	2
 
-#define DEVICE_TYPE  	LIGHT
+#define DEVICE_TYPE  	REMOTE
 
 #define KIT  		1
 
@@ -42,12 +42,12 @@ extern "C" {
 
 #define DEVICE_BOARD  	KIT
 
-#define REMOTE_SOFTWARE_VISON  	1.2
+#define REMOTE_SOFTWARE_VISON  	1.4
 /*
 遥控器1.2稳定版
 
 */
-#define LIGHT_SOFTWARE_VISON  	1.3
+#define LIGHT_SOFTWARE_VISON  	1.4
 
 /*
 灯1.2存在写flash效率低问题
@@ -59,6 +59,14 @@ extern "C" {
 
 /*
 变更记录
+
+20200929
+版本1.4
+
+1、改变灯的引脚，PWM PC4
+2、灯上电6次复位
+3、遥控器OLED不初始化和不输出IIC数据
+4、遥控器灯的引脚更改
 
 20200730
 版本1.3
@@ -96,15 +104,18 @@ enum{
 
 #if (DEVICE_BOARD == KIT)
 #if (DEVICE_TYPE == REMOTE)
-#define	GPIO_LED						GPIO_PC3//123:B4 C4 C3:
+#define	GPIO_LED						GPIO_PC1//123:B4 C4 C3:
+#define LED_ON_LEVAL					0			//gpio output high voltage to turn on led
+
 #else
 #define	GPIO_LED						GPIO_PC4//123:B4 C4 C3:
+#define LED_ON_LEVAL					1			//gpio output high voltage to turn on led
+
 #endif
-#elif(DEVICE_BOARD == DONG)
-#define	GPIO_LED						GPIO_PB0
+// #elif(DEVICE_BOARD == DONG)
+// #define	GPIO_LED					//	GPIO_PC0
 #endif
 
-#define LED_ON_LEVAL					1			//gpio output high voltage to turn on led
 
 
 #if (DEVICE_TYPE == REMOTE)

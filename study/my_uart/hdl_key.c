@@ -31,15 +31,15 @@
 
 void key_init(void)
 {
-	gpio_set_func(GPIO_PD2, AS_GPIO);
-	gpio_setup_up_down_resistor(GPIO_PD2, PM_PIN_PULLUP_10K);
-	gpio_set_output_en(GPIO_PD2, 0);
-	gpio_set_input_en(GPIO_PD2, 1);
+	gpio_set_func(KEY1_PIN, AS_GPIO);
+	gpio_setup_up_down_resistor(KEY1_PIN, PM_PIN_PULLUP_10K);
+	gpio_set_output_en(KEY1_PIN, 0);
+	gpio_set_input_en(KEY1_PIN, 1);
 
-	gpio_set_func(GPIO_PB5, AS_GPIO);
-	gpio_setup_up_down_resistor(GPIO_PB5, PM_PIN_PULLUP_10K);
-	gpio_set_output_en(GPIO_PB5, 0);
-	gpio_set_input_en(GPIO_PB5, 1);
+	gpio_set_func(KEY2_PIN, AS_GPIO);
+	gpio_setup_up_down_resistor(KEY2_PIN, PM_PIN_PULLUP_10K);
+	gpio_set_output_en(KEY2_PIN, 0);
+	gpio_set_input_en(KEY2_PIN, 1);
 }
 
 /*
