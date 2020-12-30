@@ -29,6 +29,27 @@
 
 /////////////////////////////////////////////////////////////////////
 
+void Qedc_init(void)
+{
+	QDEC_InputAchTypeDef channelA = PC2A;
+	QDEC_InputBchTypeDef channelB = PC3B;
+	QDEC_ModeTypeDef mode = DOUBLE_ACCURACY_MODE;
+
+
+	gpio_set_func(GPIO_PC2, AS_GPIO);
+	gpio_set_output_en(GPIO_PC2,0);
+	gpio_set_input_en(GPIO_PC2,1);
+	gpio_set_func(GPIO_PC3, AS_GPIO);
+	gpio_set_output_en(GPIO_PC3,0);
+	gpio_set_input_en(GPIO_PC3,1);
+
+	qdec_clk_en();
+	qdec_set_mode( mode);
+	qdec_set_pin( channelA, channelB);
+	qdec_set_debouncing(1);
+	
+}
+
 void key_init(void)
 {
 	gpio_set_func(KEY1_PIN, AS_GPIO);

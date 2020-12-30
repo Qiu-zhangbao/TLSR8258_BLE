@@ -170,6 +170,16 @@ void bsl_adv_one_bound(u8 (*mac)[6], u8 bound, u8 cmd)
 	memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
 	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
 }
+void bsl_adv_sned_qedc(int qedc)
+{
+	adv_date.bound_state = qedc&0xff;
+
+	memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
+	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
+	bls_ll_setAdvEnable(1); 
+	bls_ll_setAdvDuration(150*1000,1);
+
+}
 
 int bsl_adv_process(void)
 {

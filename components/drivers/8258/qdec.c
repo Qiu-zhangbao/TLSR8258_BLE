@@ -79,7 +79,7 @@ unsigned char qdec_get_count_value(void)
 	else
 		total_count += read_reg8(reg_qdec_count);
 
-	return tmp;
+	return total_count;
 }
 
 /**

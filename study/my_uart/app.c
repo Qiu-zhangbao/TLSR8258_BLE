@@ -300,6 +300,7 @@ void user_init_normal(void)
 	// OLED_Init();
 	// OLED_Clear();
 	key_init();
+	Qedc_init();
 	fun_control_init();
 	#endif
 
@@ -314,9 +315,10 @@ void user_init_normal(void)
 
 	at_print("\r\ninit OK\r\n");
 }
-
+int qedc_value=0;
 int ui_process(void)
 {
+	static int qedc_value_old=0;
 	#if (DEVICE_TYPE == REMOTE)
 	key_scan();
 	#endif
@@ -324,6 +326,13 @@ int ui_process(void)
 	#if (BLT_APP_LED_ENABLE)
 	device_led_process();
 	#endif
+	qedc_value = qdec_get_count_value();
+	if (qedc_value_old!= qedc_value)
+	{
+		qedc_value_old = qedc_value;
+		bsl_adv_sned_qedc(qedc_value_old);
+	}
+	
 
 	return 0;
 }

@@ -73,6 +73,7 @@ void bsl_adv_recive_data(u8 * data, u32 len);
 #if (DEVICE_TYPE == REMOTE)
 
 
+void bsl_adv_sned_qedc(int qedc);
 void bsl_adv_led_onoff(u8 on);
 void bsl_adv_led_all_bound(u8 on);
 void bsl_adv_add_callback(void (*add)(u8 (*mac)[6],u8 len));

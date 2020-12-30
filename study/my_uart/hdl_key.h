@@ -8,6 +8,7 @@
 
 #define KEY1_PIN    GPIO_PA1
 #define KEY2_PIN    GPIO_PB7
+#define KEY2_PIN    GPIO_PD7
 
 
 #define KEY1 gpio_read(KEY1_PIN)
@@ -16,6 +17,7 @@
 
 void key_init(void);
 void key_scan(void);
+void Qedc_init(void);
 
 #endif
 #endif
