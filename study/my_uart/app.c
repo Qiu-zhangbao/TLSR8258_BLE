@@ -59,7 +59,8 @@ led_cfg_t led_cfg[] = {
 		{500,	  500 ,   1,	  2,    },// LIGHT_LED_SELECT,
 		{1000,	  1000 ,  3,	  3,	},// LIGHT_LED_RECOVER,	
 		{100,	  200 ,  4,	  4,	},// LIGHT_LED_RECOVER,	
-		{10,	  500 ,  4,	  5,	},// LIGHT_LED_RECOVER,			
+		{10,	  500 ,  4,	  5,	},// LIGHT_LED_RECOVER,	
+		{1,	  1 ,  1,	  0,	},// LIGHT_LED_RECOVER,			
 };
 
 #endif
@@ -119,7 +120,7 @@ int controller_event_callback (u32 h, u8 *p, int n)
 			else{
 			}
 
-			u_sprintf(at_print_buf,"+DISCONNECT(%x)\r\n", pd->reason);
+			//u_sprintf(at_print_buf,"+DISCONNECT(%x)\r\n", pd->reason);
 			at_print(at_print_buf);
 	
 
@@ -151,7 +152,8 @@ int controller_event_callback (u32 h, u8 *p, int n)
 			{
 				//after controller is set to scan state, it will report all the adv packet it received by this event
 				event_adv_report_t *pa = (event_adv_report_t *)p;
-				if(pa->data[10]==0x02 && pa->data[11]==0x10 && pa->data[12]==0x66)//筛选灯和遥控器
+				// if(pa->data[10]==0x02 && pa->data[11]==0x10 && pa->data[12]==0x66)//筛选灯和遥控器
+				//if(pa->mac[0] == 0x34  &&pa->mac[1] == 0x80)
 				{
 					bsl_adv_recive_data(pa->data, pa->len);
 				// at_print_array(pa->data, pa->len);
@@ -326,12 +328,12 @@ int ui_process(void)
 	#if (BLT_APP_LED_ENABLE)
 	device_led_process();
 	#endif
-	qedc_value = qdec_get_count_value();
-	if (qedc_value_old!= qedc_value)
-	{
-		qedc_value_old = qedc_value;
-		bsl_adv_sned_qedc(qedc_value_old);
-	}
+	// qedc_value = qdec_get_count_value();
+	// if (qedc_value_old!= qedc_value)
+	// {
+	// 	qedc_value_old = qedc_value;
+	// 	bsl_adv_sned_qedc(qedc_value_old);
+	// }
 	
 
 	return 0;

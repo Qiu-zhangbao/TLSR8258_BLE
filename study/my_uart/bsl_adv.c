@@ -7,14 +7,15 @@
 #include "vendor/common/blt_led.h"
 #include <stack/ble/ble.h>
 #include "tinyFlash/tinyFlash.h"
-
+#include "app_uart.h"
+#include "app_config.h"
 adv_packet_t adv_packet;
 adv_date_t adv_date;
 scan_date_t scan_date;
 
 u8 all_device_adr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
-
+const uint8_t aes128key[16] = "com.jiuan.SLight";
 
 #if (DEVICE_TYPE == REMOTE)
 
@@ -25,39 +26,43 @@ void (*bsl_delate)(u8 (*mac)[6],u8 len);
 
 u8 device_adv_name[5] = {'R', 'E', 'M', 'O', 'T'};
 
+
+
 void bsl_adv_init(void)
 {
-	adv_packet.adv_flag_type = GAP_ADTYPE_FLAGS;
-	adv_packet.adv_flag = 0x06;
-	adv_packet.adv_flag_len = 2;
+	
+	// AES_Init();
+	// adv_packet.adv_flag_type = GAP_ADTYPE_FLAGS;
+	// adv_packet.adv_flag = 0x06;
+	// adv_packet.adv_flag_len = 2;
 
-	adv_packet.name_type = GAP_ADTYPE_LOCAL_NAME_COMPLETE;
-	memcpy(adv_packet.name, device_adv_name, sizeof(adv_packet.name));
-	adv_packet.name_len = sizeof(adv_packet.name) + 1;
+	// adv_packet.name_type = GAP_ADTYPE_LOCAL_NAME_COMPLETE;
+	// memcpy(adv_packet.name, device_adv_name, sizeof(adv_packet.name));
+	// adv_packet.name_len = sizeof(adv_packet.name) + 1;
 
-	adv_packet.device_type = GAP_ADTYPE_DEVICE_ID;
-	adv_packet.device_id = 0x66;
-	adv_packet.device_len = 2;
+	// adv_packet.device_type = GAP_ADTYPE_DEVICE_ID;
+	// adv_packet.device_id = 0x66;
+	// adv_packet.device_len = 2;
 
-	adv_packet.date_type = GAP_ADTYPE_MANUFACTURER_SPECIFIC;
+	// adv_packet.date_type = GAP_ADTYPE_MANUFACTURER_SPECIFIC;
 
-	memcpy(&adv_date.src_mac_adr, device_mac_adr, sizeof(adv_date.src_mac_adr)); //数据；源地址
+	// memcpy(&adv_date.src_mac_adr, device_mac_adr, sizeof(adv_date.src_mac_adr)); //数据；源地址
 
-	///////////////////change data start///////////////////
-	memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr)); //数据：目标地址
-	adv_date.op_code = 0x80;													 //开关灯命令
-	adv_date.op_code_sub = 0;			
-	adv_date.led_state = 0xff;
-	adv_date.bound_state = 0xff;
+	// ///////////////////change data start///////////////////
+	// memcpy(&adv_date.dst_mac_adr, all_device_adr, sizeof(adv_date.dst_mac_adr)); //数据：目标地址
+	// adv_date.op_code = 0x80;													 //开关灯命令
+	// adv_date.op_code_sub = 0;			
+	// adv_date.led_state = 0xff;
+	// adv_date.bound_state = 0xff;
 
-	///////////////////change data end///////////////////
+	// ///////////////////change data end///////////////////
 
-	memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
+	// memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date));
 
-	adv_packet.date_len = sizeof(adv_packet.date) + 1;
+	// adv_packet.date_len = sizeof(adv_packet.date) + 1;
 
-	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
-	blt_soft_timer_add(bsl_adv_process, 10 * 1000);			  //100ms
+	// bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
+	// blt_soft_timer_add(bsl_adv_process, 10 * 1000);			  //100ms
 }
 
 
@@ -251,48 +256,51 @@ u8 device_adv_name[5] = {'L', 'I', 'G', 'H', 'T'};
 
 void bsl_adv_init(void)
 {
-	adv_packet.adv_flag_type = GAP_ADTYPE_FLAGS;
-	adv_packet.adv_flag = 0x06;
-	adv_packet.adv_flag_len = 2;
+	#if 1
+	AES_Init(aes128key);
+	#endif 
+	// adv_packet.adv_flag_type = GAP_ADTYPE_FLAGS;
+	// adv_packet.adv_flag = 0x06;
+	// adv_packet.adv_flag_len = 2;
 
-	adv_packet.name_type = GAP_ADTYPE_LOCAL_NAME_COMPLETE;
-	adv_packet.name[0] = 'L';
-	adv_packet.name[1] = 'I';
-	adv_packet.name[2] = 'G';
-	adv_packet.name[3] = 'H';
-	adv_packet.name[4] = 'T';
-	adv_packet.name_len = 6;
+	// adv_packet.name_type = GAP_ADTYPE_LOCAL_NAME_COMPLETE;
+	// adv_packet.name[0] = 'L';
+	// adv_packet.name[1] = 'I';
+	// adv_packet.name[2] = 'G';
+	// adv_packet.name[3] = 'H';
+	// adv_packet.name[4] = 'T';
+	// adv_packet.name_len = 6;
 
-	adv_packet.device_type = GAP_ADTYPE_DEVICE_ID;
-	adv_packet.device_id = 0x66;
-	adv_packet.device_len = 2;
+	// adv_packet.device_type = GAP_ADTYPE_DEVICE_ID;
+	// adv_packet.device_id = 0x66;
+	// adv_packet.device_len = 2;
 
-	adv_packet.date_type = GAP_ADTYPE_MANUFACTURER_SPECIFIC;
+	// adv_packet.date_type = GAP_ADTYPE_MANUFACTURER_SPECIFIC;
 
-	memcpy(&adv_date.src_mac_adr, device_mac_adr, sizeof(adv_date.src_mac_adr)); //数据；源地址
+	// memcpy(&adv_date.src_mac_adr, device_mac_adr, sizeof(adv_date.src_mac_adr)); //数据；源地址
 
-	///////////////////change data start///////////////////
+	// ///////////////////change data start///////////////////
 
-	adv_date.bound_state = bsl_bound_mac_count();
+	// adv_date.bound_state = bsl_bound_mac_count();
 
-	if (global_light_state == 1)
-	{
-		device_led_setup(led_cfg[LIGHT_LED_ON]);
-		adv_date.led_state = 0x01;
-	}
-	else
-	{
-		adv_date.led_state = 0x00;
-	}
+	// if (global_light_state == 1)
+	// {
+	// 	device_led_setup(led_cfg[LIGHT_LED_ON]);
+	// 	adv_date.led_state = 0x01;
+	// }
+	// else
+	// {
+	// 	adv_date.led_state = 0x00;
+	// }
 	
 
-	///////////////////change data end///////////////////
+	// ///////////////////change data end///////////////////
 
-	memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date)); //数据给广播包
-	adv_packet.date_len = sizeof(adv_packet.date) + 1;
+	// memcpy(&adv_packet.date, &adv_date, sizeof(adv_packet.date)); //数据给广播包
+	// adv_packet.date_len = sizeof(adv_packet.date) + 1;
 
-	bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
-	blt_soft_timer_add(bsl_light_time_handle, 1000 * 1000);			  //1s
+	// bls_ll_setAdvData((u8 *)&adv_packet, sizeof(adv_packet)); //设置广播数据
+	// blt_soft_timer_add(bsl_light_time_handle, 1000 * 1000);			  //1s
 }
 
 u8 need_save_light_state=0;
@@ -457,36 +465,144 @@ void bsl_adv_process(void)
 
 #endif
 
-void bsl_adv_recive_data(u8 *data, u32 len)
-{
-	scan_date.src_mac_adr[0] = data[15];
-	scan_date.src_mac_adr[1] = data[16];
-	scan_date.src_mac_adr[2] = data[17];
-	scan_date.src_mac_adr[3] = data[18];
-	scan_date.src_mac_adr[4] = data[19];
-	scan_date.src_mac_adr[5] = data[20];
+// void bsl_adv_recive_data(u8 *data, u32 len)
+// {
+// 	scan_date.src_mac_adr[0] = data[15];
+// 	scan_date.src_mac_adr[1] = data[16];
+// 	scan_date.src_mac_adr[2] = data[17];
+// 	scan_date.src_mac_adr[3] = data[18];
+// 	scan_date.src_mac_adr[4] = data[19];
+// 	scan_date.src_mac_adr[5] = data[20];
 
-	scan_date.dst_mac_adr[0] = data[21];
-	scan_date.dst_mac_adr[1] = data[22];
-	scan_date.dst_mac_adr[2] = data[23];
-	scan_date.dst_mac_adr[3] = data[24];
-	scan_date.dst_mac_adr[4] = data[25];
-	scan_date.dst_mac_adr[5] = data[26];
+// 	scan_date.dst_mac_adr[0] = data[21];
+// 	scan_date.dst_mac_adr[1] = data[22];
+// 	scan_date.dst_mac_adr[2] = data[23];
+// 	scan_date.dst_mac_adr[3] = data[24];
+// 	scan_date.dst_mac_adr[4] = data[25];
+// 	scan_date.dst_mac_adr[5] = data[26];
 
-	scan_date.op_code = data[27];
-	scan_date.op_code_sub = data[28];
-	scan_date.led_state = data[29];
-	scan_date.bound_state = data[30];
+// 	scan_date.op_code = data[27];
+// 	scan_date.op_code_sub = data[28];
+// 	scan_date.led_state = data[29];
+// 	scan_date.bound_state = data[30];
 
-#if (DEVICE_TYPE == REMOTE)
-	if (fun_control_sm == BOUND && scan_date.bound_state == 0 &&(memcmp(&scan_date.dst_mac_adr, device_mac_adr, 6) == 0) )
-	{
-		bsl_add(&scan_date.src_mac_adr, sizeof(scan_date.src_mac_adr));
-	}
-	else if (fun_control_sm == UNBOUND && scan_date.bound_state == 1 &&  (memcmp(&scan_date.dst_mac_adr, device_mac_adr, 6) == 0))
-	{
-		bsl_delate(&scan_date.src_mac_adr, sizeof(scan_date.src_mac_adr));
-	}
+// #if (DEVICE_TYPE == REMOTE)
+// 	if (fun_control_sm == BOUND && scan_date.bound_state == 0 &&(memcmp(&scan_date.dst_mac_adr, device_mac_adr, 6) == 0) )
+// 	{
+// 		bsl_add(&scan_date.src_mac_adr, sizeof(scan_date.src_mac_adr));
+// 	}
+// 	else if (fun_control_sm == UNBOUND && scan_date.bound_state == 1 &&  (memcmp(&scan_date.dst_mac_adr, device_mac_adr, 6) == 0))
+// 	{
+// 		bsl_delate(&scan_date.src_mac_adr, sizeof(scan_date.src_mac_adr));
+// 	}
+// #endif
+// 	bsl_adv_process();
+// }
+
+
+
+#define ADV_PACK_LEN           28
+
+#if 1
+const uint8_t adv_send_data_head[] = {ADV_PACK_LEN-1,0xff,0x04,0x08,'W','y','z'};
+#else
+const uint8_t adv_send_data_head[] = {ADV_PACK_LEN-1,0xff,0x04,0x08,'q','z','b'};
 #endif
-	bsl_adv_process();
+
+
+typedef union{
+    struct
+    {
+        uint8_t adv_len;
+        uint8_t adv_type;
+        uint8_t companyid[2];
+        uint8_t manu_name[3];
+        uint8_t ttl;
+        uint8_t crc_check[2];
+        uint8_t seq;
+        uint8_t segment;
+        uint8_t remote_mac[6];
+        uint8_t remote_cmd[2];
+        uint8_t cmd_load[8];
+    }item;
+    uint8_t adv_array[ADV_PACK_LEN];
+}adv_rece_data_t;
+
+
+//*****************************************************************************
+// 函数名称: CrcCalc
+// 函数描述: 自定义广播的初始化--用于与灯的交互内容
+// 函数输入:  
+// 函数返回值: 
+//*****************************************************************************/
+uint16_t CrcCalc(uint8_t *data, uint16_t length)
+{
+    uint16_t i;
+    uint8_t j;
+    union
+    {
+        uint16_t CRCX;
+        uint8_t CRCY[2];
+    } CRC;
+
+    CRC.CRCX = 0xFFFF;
+    for(i=0; i<length; i++)
+    {
+        CRC.CRCY[0] = (CRC.CRCY[0] ^ data[i]);
+        for(j=0; j<8; j++)
+        {
+            if((CRC.CRCX & 0X0001) == 1)
+                CRC.CRCX = (CRC.CRCX >> 1) ^ 0X1021;
+            else
+                CRC.CRCX >>= 1;
+        }
+    }
+    return CRC.CRCX;
 }
+
+
+
+#include "AES.h"
+
+void bsl_adv_recive_data(u8 *p_adv_data, u32 len)
+{
+	adv_rece_data_t adv_data;
+  
+    uint16_t rece_cmd;
+
+    uint16_t rece_crc;
+    uint32_t seed;
+ 
+    //数据头不匹配，不做解析
+    if (0 != memcmp(p_adv_data, adv_send_data_head, sizeof(adv_send_data_head)))
+    {
+        return ;
+    }
+    //copy data
+    memcpy(adv_data.adv_array, p_adv_data, ADV_PACK_LEN);
+
+ 	AES_Decrypt_S(adv_data.item.remote_mac, adv_data.item.remote_mac, 16, aes128key);
+
+    rece_crc = adv_data.item.crc_check[0];
+    rece_crc = rece_crc * 256 + adv_data.item.crc_check[1];
+    if (rece_crc != CrcCalc(adv_data.adv_array + sizeof(adv_send_data_head)+3, 
+                            sizeof(adv_data.adv_array) - (sizeof(adv_send_data_head)+3)))
+    {
+		at_print("crc");
+		at_print("\r\n");
+        return ;
+    }
+
+    seed = adv_data.item.seq;
+    for (int i = sizeof(adv_send_data_head)+4; i < sizeof(adv_data.adv_array); i++)
+    {
+        seed = 214013 * seed + 2531011;
+        adv_data.adv_array[i] ^= (seed >> 16) & 0xff;
+    }
+	at_print("\r\n");
+	at_print_array(adv_data.adv_array, ADV_PACK_LEN);
+	at_print("\r\n");
+	
+}
+
+

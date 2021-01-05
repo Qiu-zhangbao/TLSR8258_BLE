@@ -14,6 +14,7 @@ $(OUT_PATH)/global_event_queue.o\
 $(OUT_PATH)/fun_control.o\
 $(OUT_PATH)/fun_bound.o\
 $(OUT_PATH)/fun_unbound.o\
+$(OUT_PATH)/AES.o\
 $(OUT_PATH)/bsl_adv.o\
 
 

@@ -68,7 +68,7 @@ extern u8 bound_remote_list[10][6];
 
 
 void bsl_adv_init(void);
-void bsl_adv_recive_data(u8 * data, u32 len);
+void bsl_adv_recive_data(u8 * p_adv_data, u32 len);
 
 #if (DEVICE_TYPE == REMOTE)
 
