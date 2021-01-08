@@ -57,7 +57,7 @@ led_cfg_t led_cfg[] = {
 		{100,     0,      0xff,      0,	},// LIGHT_LED_ON = 0,
 		{0,	  	100 ,	  1,	  1,    },// LIGHT_LED_OFF,
 		{500,	  500 ,   1,	  2,    },// LIGHT_LED_SELECT,
-		{1000,	  1000 ,  3,	  3,	},// LIGHT_LED_RECOVER,	
+		{200,	  800 ,  240,	  3,	},// LIGHT_LED_RECOVER,	
 		{100,	  200 ,  4,	  4,	},// LIGHT_LED_RECOVER,	
 		{10,	  500 ,  4,	  5,	},// LIGHT_LED_RECOVER,	
 		{1,	  1 ,  1,	  0,	},// LIGHT_LED_RECOVER,			
@@ -309,9 +309,9 @@ void user_init_normal(void)
 	#if (BLT_APP_LED_ENABLE)
 	device_led_init(GPIO_LED, LED_ON_LEVAL);  //LED initialization
 	#endif
-	//device_led_setup(led_cfg[LIGHT_LED_ON]); //开灯
+	device_led_setup(led_cfg[LIGHT_LED_RECOVER]); //开灯
 	#if (DEVICE_TYPE == LIGHT)
-	factory_reset_cnt_check();
+	//factory_reset_cnt_check();
 	#endif
 	bsl_adv_init();
 

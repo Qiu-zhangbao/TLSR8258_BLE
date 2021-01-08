@@ -503,7 +503,7 @@ void bsl_adv_process(void)
 
 #define ADV_PACK_LEN           28
 
-#if 1
+#if 0
 const uint8_t adv_send_data_head[] = {ADV_PACK_LEN-1,0xff,0x04,0x08,'W','y','z'};
 #else
 const uint8_t adv_send_data_head[] = {ADV_PACK_LEN-1,0xff,0x04,0x08,'q','z','b'};
