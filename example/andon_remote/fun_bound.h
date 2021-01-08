@@ -13,7 +13,11 @@
 #define ADV_PARILOAD_RESET        0xFF
 
 #define ADV_CMD_PARI                0x0200
-
+typedef struct
+{
+    uint8_t  pair_stata;
+    uint8_t  dst_mac[6];
+} mesh_btn_pairload_t;
 
 void fun_bound_init(void);
 void fun_bound_in(void);

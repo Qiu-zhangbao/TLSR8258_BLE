@@ -55,7 +55,7 @@ typedef union{
     uint8_t adv_array[ADV_PACK_LEN+1];
 }adv_send_data_t;
 
-
+#define ADV_PACK_TTL                1
 
 
 extern u8  device_mac_adr[6];

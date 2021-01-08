@@ -11,10 +11,10 @@ static uint16_t   adv_fifo_out_optr = 0;
 static uint16_t   adv_fifo_out_iptr = 0;
 
 
-#if 1
+#if 0
 const uint8_t adv_send_data_head[] = {ADV_PACK_LEN-1,0xff,0x04,0x08,'W','y','z'};
 #else
-const uint8_t adv_send_data_head[] = {ADV_PACK_LEN-1,BTM_BLE_ADVERT_TYPE_MANUFACTURER,0x04,0x08,'q','z','b'};
+const uint8_t adv_send_data_head[] = {ADV_PACK_LEN-1,0xff,0x04,0x08,'q','z','b'};
 #endif
 
 uint32_t   adv_send_seq = 0xFD;
@@ -150,8 +150,12 @@ void adv_vendor_send_cmd(uint16_t user_cmd,uint8_t *pack_load,uint8_t len,uint8_
 }
 
 
+
+
 void bsl_adv_recive_data(u8 * data, u32 len)
 {
+
+
 
 
 }
