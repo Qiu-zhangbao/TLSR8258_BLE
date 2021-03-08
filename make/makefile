@@ -61,7 +61,7 @@ endif
 
 
 #include SDK makefile
--include $(TEL_PATH)/make/application.mk
+#-include $(TEL_PATH)/make/application.mk
 -include $(TEL_PATH)/make/boot.mk
 -include $(TEL_PATH)/make/common.mk
 -include $(TEL_PATH)/make/drivers_8258.mk

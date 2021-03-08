@@ -39,7 +39,7 @@
 #include "hdl_uart.h"
 
 
-#define	MY_RF_POWER_INDEX	RF_POWER_P3p01dBm
+#define	MY_RF_POWER_INDEX	RF_POWER_P10p46dBm
 
 
 

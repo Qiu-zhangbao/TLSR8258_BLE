@@ -145,6 +145,20 @@ void AndonCmd_Toggle(uint16_t delay)
     // }
     
 }
+
+void AndonCmd_Tooling(void)
+{
+    uint8_t data[] = "  SL10";
+    data[0] = ADV_TOOLING_BURNIN;
+    data[1] = ADV_TOOLING_RSST_LIMIT;
+
+    adv_vendor_send_cmd(ADV_CMD_TOOLING,data,sizeof(data)-1,0);
+}
+
+
+
+
+
 void fun_control_in(void)
 {
 
@@ -163,7 +177,7 @@ static event_type_t fun_controlevent_handle(event_type_t event)
         {
 			case EVENT_ONOFF_ONE:
                 device_led_setup(led_cfg[REMOTE_LED_KEY_PRESS]); //开灯
-                AndonCmd_Toggle(0);
+                AndonCmd_Tooling();
                 break;
             case EVENT_ONOFF_LONG:
                 device_led_setup(led_cfg[REMOTE_LED_BOUND_MODE]); //开灯

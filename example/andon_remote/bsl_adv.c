@@ -14,7 +14,7 @@ static uint16_t   adv_fifo_out_iptr = 0;
 #if 0
 const uint8_t adv_send_data_head[] = {ADV_PACK_LEN-1,0xff,0x04,0x08,'W','y','z'};
 #else
-const uint8_t adv_send_data_head[] = {ADV_PACK_LEN-1,0xff,0x04,0x08,'q','z','b'};
+const uint8_t adv_send_data_head[] = {ADV_PACK_LEN-1,0xff,0x04,0x08,'Q','Z','B'};
 #endif
 
 uint32_t   adv_send_seq = 0xFD;
@@ -146,7 +146,7 @@ void adv_vendor_send_cmd(uint16_t user_cmd,uint8_t *pack_load,uint8_t len,uint8_
     // adv_send_Scheduling();
 	bls_ll_setAdvData((u8 *)&adv_fifo_out[adv_fifo_out_iptr].adv_array,ADV_PACK_LEN); 
 	bls_ll_setAdvEnable(1); 
-	bls_ll_setAdvDuration(100*1000,1);
+	// bls_ll_setAdvDuration(100*1000,1);
 }
 
 
