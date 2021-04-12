@@ -76,11 +76,11 @@ LST_FILE := $(OUT_PATH)/$(PROJECT_NAME).lst
 BIN_FILE := $(OUT_PATH)/$(PROJECT_NAME).bin
 ELF_FILE := $(OUT_PATH)/$(PROJECT_NAME).elf
 UART_BOOT:= $(TEL_PATH)/components/TB-02_boot_V0.5.bin
-
+BIN_FILE_DOWNLOAD:= ../example/$(PROJECT_NAME)/out/$(PROJECT_NAME).bin
 SIZEDUMMY := sizedummy
 
 # All Target
-all: pre-build main-build
+all: pre-build main-build down-load
 
 # Main-build Target
 main-build: $(ELF_FILE) secondary-outputs
@@ -123,6 +123,12 @@ pre-build:
 
 flash:
 	python $(TEL_PATH)/make/Telink_Tools.py -p $(DOWNLOAD_PORT) burn $(BIN_FILE) 
+
+down-load:
+	cd $(TEL_PATH)/make;\
+	./Cmd_download_tool.exe 1 8258 ac;\
+	./Cmd_download_tool.exe 1 8258 wf 0 -i $(BIN_FILE_DOWNLOAD);\
+	./Cmd_download_tool.exe 1 8258 rst -f
 
 erase_fw:
 	python $(TEL_PATH)/make/Telink_Tools.py -p $(DOWNLOAD_PORT) erase_flash 0x4000 44

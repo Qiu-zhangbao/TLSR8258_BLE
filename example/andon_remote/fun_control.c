@@ -6,6 +6,8 @@
 #include "app_config.h"
 #include "bsl_adv.h"
 
+#include "hdl_uart.h"
+
 static event_type_t fun_controlevent_handle(event_type_t event);
 int fun_control_process(void);
 
@@ -177,7 +179,8 @@ static event_type_t fun_controlevent_handle(event_type_t event)
         {
 			case EVENT_ONOFF_ONE:
                 device_led_setup(led_cfg[REMOTE_LED_KEY_PRESS]); //开灯
-                AndonCmd_Tooling();
+                AndonCmd_Toggle(0);
+                at_print("\r\nAndonCmd_Toggle\r\n");
                 break;
             case EVENT_ONOFF_LONG:
                 device_led_setup(led_cfg[REMOTE_LED_BOUND_MODE]); //开灯

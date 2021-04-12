@@ -64,6 +64,15 @@ void key_init(void)
 	gpio_set_output_en(PAIR_PIN, 0);
 	gpio_set_input_en(PAIR_PIN, 1);
 
+	gpio_set_func(ENCODER_GND, AS_GPIO);
+	gpio_setup_up_down_resistor(ENCODER_GND, PM_PIN_PULLDOWN_100K);
+	gpio_set_output_en(ENCODER_GND, 1);
+	gpio_set_input_en(ENCODER_GND, 0);
+
+	gpio_set_func(GPIO_PB6, AS_GPIO);
+	gpio_setup_up_down_resistor(GPIO_PB6, PM_PIN_PULLDOWN_100K);
+	gpio_set_input_en(GPIO_PB6, 1);
+
 }
 
 /*

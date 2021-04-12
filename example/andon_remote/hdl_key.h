@@ -6,8 +6,9 @@
 
 
 #define ONOFF_PIN    GPIO_PA1
-#define RESET_PIN    GPIO_PB7
+#define RESET_PIN    GPIO_PD3
 #define PAIR_PIN    GPIO_PD7
+#define ENCODER_GND    GPIO_PD4
 
 
 #define ONOFF_PIN_READ gpio_read(ONOFF_PIN)

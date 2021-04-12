@@ -200,12 +200,12 @@ void user_init_normal(void)
 	apc_fun_sm_init();
 
 
-	device_led_init(GPIO_PC0, LED_ON_LEVAL);  //LED initialization
+	device_led_init(GPIO_PD2, LED_ON_LEVAL);  //LED initialization
 
 	// //factory_reset_cnt_check();
 	bsl_adv_init();
 
-	// at_print("\r\ninit OK\r\n");
+	at_print("\r\ninit OK\r\n");
 }
 
 int ui_process(void)
@@ -218,10 +218,12 @@ int ui_process(void)
 
 	return 0;
 }
-
+u32 tick_loop = 0;
 _attribute_ram_code_ void main_loop (void)
 {
 	blt_sdk_main_loop();
 	blt_soft_timer_process(MAINLOOP_ENTRY);
+	tick_loop++;
+	
 }
 

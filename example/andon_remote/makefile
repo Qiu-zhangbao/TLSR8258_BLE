@@ -28,7 +28,7 @@ LIBS :=  -llt_8258
 TEL_PATH := ../..
 
 # Set Project Name
-PROJECT_NAME := andon_remote_tl
+PROJECT_NAME := andon_remote
 
 # 设置下载固件的串口号
 DOWNLOAD_PORT := /dev/ttyUSB0
